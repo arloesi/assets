@@ -23,5 +23,19 @@ eclipse {
   }
 }
 
+sourceSets {
+  main {
+    groovy {
+      srcDirs = ["src/main"]
+    }
+  }
+
+  test {
+    groovy {
+      srcDirs = ["src/test"]
+    }
+  }
+}
+
 task projects(dependsOn:["cleanEclipse","eclipseProject","eclipseClasspath"]) << {
 }
