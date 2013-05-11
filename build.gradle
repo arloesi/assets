@@ -26,13 +26,13 @@ eclipse {
 sourceSets {
   main {
     groovy {
-      srcDirs = ["src/main"]
+      srcDirs = ["src/main/groovy"]
     }
   }
 
   test {
     groovy {
-      srcDirs = ["src/test"]
+      srcDirs = ["src/test/groovy"]
     }
   }
 }
