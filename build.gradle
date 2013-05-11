@@ -1,0 +1,27 @@
+
+apply plugin: "groovy"
+apply plugin: "eclipse"
+
+ext {
+  rhino="1.7R4"
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  compile gradleApi()
+  compile localGroovy()
+  compile group:"org.mozilla",name:"rhino",version:rhino
+}
+
+eclipse {
+  classpath {
+    downloadSources=true
+    downloadJavadoc=true
+  }
+}
+
+task projects(dependsOn:["cleanEclipse","eclipseProject","eclipseClasspath"]) << {
+}
