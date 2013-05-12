@@ -1,0 +1,13 @@
+
+assets {
+  optimize = true
+
+  bundles {
+    common {
+      styles = ["common","layout"]
+      scripts = ["common","utility"]
+    }
+  }
+
+  modules = ["main","login"]
+}
