@@ -31,7 +31,16 @@ class Module {
 
   void evaluateReader(String source, Reader reader) {
     def ctx = Context.enter()
+    ctx.setOptimizationLevel(-1)
     ctx.evaluateReader(scope,reader,source,0,null)
+
+    /*try {
+      ctx.evaluateReader(scope,reader,source,0,null)
+    } catch(Exception) {
+      ctx.setOptimizationLevel(-1)
+      ctx.evaluateReader(scope,reader,source,0,null)
+    }*/
+
     Context.exit()
   }
 

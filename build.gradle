@@ -46,14 +46,5 @@ sourceSets {
   }
 }
 
-test {
-  // set heap size for the test JVM(s)
-  minHeapSize = "128m"
-  maxHeapSize = "512m"
-
-  // set JVM arguments for the test JVM(s)
-  jvmArgs '-XX:MaxPermSize=256m'
-}
-
 task projects(dependsOn:["cleanEclipse","eclipseProject","eclipseClasspath"]) << {
 }
