@@ -1,9 +1,16 @@
 
-inline ->
-  class this.Menu
-    constructor: (i) ->
-      this.items = [{title:"Home",target:"home"},{title:"Content",target:"content"}]
+menu =
+  script: ->
+    class this.Menu
+      constructor: (i) ->
+        this.items = [{title:"Home",target:"home"},{title:"Content",target:"content"}]
 
-menu = ->
-  div "menu", ->
-    div "item", "My Item"
+  template: ->
+    div "menu","data-bind":"with:new Menu()", ->
+      div "item", "My Item"
+
+this.module =
+  include: ["kernel"]
+  inlines: [menu.script]
+  templates:
+    menu: menu.template
