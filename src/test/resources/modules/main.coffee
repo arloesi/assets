@@ -7,8 +7,8 @@ this.module =
 
   markup: master
     head: ->
-      title " My Title"
+      title "Home"
 
     body: ->
-      div "My Content"
+      div "Content"
 
