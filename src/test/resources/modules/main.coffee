@@ -1,11 +1,11 @@
 
 this.module =
-  include:  ["common"]
+  include:  []
 
   scripts:  ["common","main"]
   styles:   ["common","main"]
 
-  markup: master
+  markup:
     head: ->
       title "Home"
 

@@ -20,15 +20,16 @@ object Markup {
   }
 }
 
-class Markup(module:Module,config:Markup.Config,val name:String,coffee:Coffee,less:Less) {
+class Markup(root:Module,config:Markup.Config,val name:String,coffee:Coffee,less:Less) {
   import Markup._
   type Compiler = {val extension:String;def compile(s:String,x:String):String}
 
-  val scope = load(name)
+  val module = new Module(root)
   val includes = new LinkedHashSet[String]()
   val inlines = new LinkedList[String]()
   val scripts = new LinkedHashMap[String,String]()
   val styles = new LinkedHashMap[String,String]()
+  val scope = load(name)
 
   lazy val markup = {
     val render = scope.get("render",scope).asInstanceOf[Function]
@@ -74,41 +75,44 @@ class Markup(module:Module,config:Markup.Config,val name:String,coffee:Coffee,le
 
   def load(name:String):Scriptable = {
     var source:String = null
+    var stream:InputStream = null
 
     breakable {
       for(i <- config.includePaths) {
-        val file = new File(i+"/"+name+".coffee")
+        val path = i+"/"+name+".coffee"
+        stream = getClass().getClassLoader().getResourceAsStream(path)
 
-        if(file.exists()) {
-          source = file.getPath()
+        if(stream != null) {
+          source = path
           break
         }
       }
     }
 
-    module.evaluateFile(source)
+    module.evaluateReader(source,new StringReader(coffee.compile(name,IOUtils.toString(stream))))
 
     val ctx = Context.enter()
-    val unwrap:Function = module.get("__markup_unwrap_module")
-    val scope = unwrap.call(ctx,module.scope,module.scope,Array()).asInstanceOf[Scriptable]
+    val unwrap:Function = root.get("__markup_unwrap_module")
+    val init:Scriptable = module.get("module")
+    val scope = unwrap.call(ctx,module.scope,module.scope,Array(init)).asInstanceOf[Scriptable]
     Context.exit()
 
-    for(i <- scope.get("include",scope).asInstanceOf[List[String]]) {
+    for(i <- Context.toType(scope.get("include",scope),classOf[List[String]]).asInstanceOf[List[String]]) {
       if(!includes.contains(i)) {
         includes.add(i)
         load(i)
       }
     }
 
-    inlines.addAll(scope.get("inlines",scope).asInstanceOf[List[String]])
+    inlines.addAll(Context.toType(scope.get("inlines",scope),classOf[List[String]]).asInstanceOf[List[String]])
 
-    for(script <- scope.get("scripts",scope).asInstanceOf[List[String]]) {
+    for(script <- Context.toType(scope.get("scripts",scope),classOf[List[String]]).asInstanceOf[List[String]]) {
       compile(script,scripts,config.scriptPaths,
         new {val extension = "js";def compile(s:String,x:String) = x}::
         new {val extension = "coffee";def compile(s:String,x:String) = coffee.compile(s,x)}::Nil)
     }
 
-    for(style <- scope.get("styles",scope).asInstanceOf[List[String]]) {
+    for(style <- Context.toType(scope.get("styles",scope),classOf[List[String]]).asInstanceOf[List[String]]) {
       compile(style,styles,config.stylePaths,
         new {val extension = "css";def compile(s:String,x:String) = x}::
         new {val extension = "less";def compile(s:String,x:String) = less.compile(x)}::Nil)
@@ -127,11 +131,12 @@ class Markup(module:Module,config:Markup.Config,val name:String,coffee:Coffee,le
     breakable {
       for(path <- paths) {
         for(compiler <- compilers) {
-          val file = new File(path+"/"+source+"."+compiler.extension)
+          val file = path+"/"+source+"."+compiler.extension
+          val stream = getClass().getClassLoader().getResourceAsStream(file)
 
-          if(file.exists()) {
-            if(included.get(file.getPath()) == null) {
-              included.put(file.getPath(), compiler.compile(file.getPath(),FileUtils.readFileToString(file)))
+          if(stream != null) {
+            if(included.get(file) == null) {
+              included.put(file, compiler.compile(file,IOUtils.toString(stream)))
             }
 
             break

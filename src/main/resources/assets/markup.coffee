@@ -256,40 +256,40 @@ markup.render = (template) ->
   writer.buffer = holder
   buffer.join ""
 
-unwrapList = (i) ->
-  if typeof i == "undefined"
-    new java.util.LinkedList()
-  else
-    list = new java.util.LinkedList()
+unwrapList = (items) ->
+  list = new java.util.LinkedList()
+  if typeof items != "undefined"
     list.add i for i in items
-    list
+  list
 
 unwrapInlines = (inlines) ->
   list = new java.util.LinkedList()
-  list.add "(#{i}).call(this);\n" for i in inlines
+  if typeof inlines != "undefined"
+    list.add "(#{i}).call(this);\n" for i in inlines
   list
 
 unwrapTemplates = (templates) ->
   list = new java.util.LinkedList()
-  list.add (markup.render i) for i in templates
+  if typeof templates != "undefined"
+    list.add (markup.render i) for i in templates
   list
 
 this.__markup_unwrap_module = (module) ->
   result =
-    includes: unwrapList module.includes
+    include: unwrapList module.include
     scripts: unwrapList module.scripts
     styles: unwrapList module.styles
     inlines: unwrapInlines module.inlines
 
-  if typeof module["render"] != "undefined"
-    result.render (script,style,templates) ->
+  if typeof module["markup"] != "undefined"
+    result.render = (js,css,templates) ->
       markup.render ->
         html ->
           head ->
             runtime()
 
-            link rel:"stylesheet",href:style
-            script type:"tet/javascript",src:script
+            link type:"text/css",rel:"stylesheet",href:css
+            script type:"tet/javascript",src:js
 
             module.markup.head()
 
