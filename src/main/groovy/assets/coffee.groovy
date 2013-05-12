@@ -15,7 +15,6 @@ class Coffee {
     Function compile = coffee.get("compile")
 
     def ctx = Context.enter()
-    ctx.setOptimizationLevel(0)
     def js = compile.call(ctx, module.scope, coffee, source)
     Context.exit()
 
