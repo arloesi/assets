@@ -10,7 +10,7 @@ class Assets {
     def module = new Module()
     module.evaluateString("this.count=4")
     def count = module.scope.get("count")
-    Assert.assertEquals(4,count)
+    Assert.assertEquals(4.0,count,0.0)
   }
 
   @Test
@@ -22,7 +22,7 @@ class Assets {
     module.evaluateString(script)
 
     Assert.assertEquals(null, module.scope.get("x"))
-    Assert.assertEquals(5, module.scope.get("y"))
+    Assert.assertEquals(5.0, module.scope.get("y"),0.0)
   }
 
   @Test
