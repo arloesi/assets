@@ -29,11 +29,12 @@ class Assets {
   void less() {
     def less = new Less()
     def style = less.compile("@padding:8px;\n.dialog {padding:@padding;}\n")
-    System.out.println("style:"+style)
+    Assert.assertEquals(style.replaceAll("\\s+",""), ".dialog{padding:8px;}")
   }
 
   @Test
   void markup() {
+    // def markup = new Markup()
 
   }
 
