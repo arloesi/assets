@@ -7,12 +7,18 @@ class Coffee {
 
   Coffee(Module module) {
     this.module = module
-    module.evaluateFile("src/main/resources/coffee-script.js")
+    module.evaluateFile("src/main/resources/assets/coffee-script.js")
   }
 
   String compile(String name, String source) {
-    def coffee = module.get("CoffeeScript")
+    def coffee = module.scope.get("CoffeeScript")
     Function compile = coffee.get("compile")
-    return compile.call(ctx, module.scope, coffee, [source])
+
+    def ctx = Context.enter()
+    ctx.setOptimizationLevel(0)
+    def js = compile.call(ctx, module.scope, coffee, source)
+    Context.exit()
+
+    return js
   }
 }

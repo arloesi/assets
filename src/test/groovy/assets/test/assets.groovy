@@ -10,15 +10,17 @@ class Assets {
     def module = new Module()
     module.evaluateString("this.count=4")
     def count = module.scope.get("count")
-    Assert.assertEquals 4,count
+    Assert.assertEquals(4,count)
   }
 
   @Test
   void coffee() {
     def coffee = new Coffee(new Module())
     def script = coffee.compile("<inline>","x=4\nthis.y=5")
+
     def module = new Module()
     module.evaluateString(script)
+
     Assert.assertEquals(null, module.scope.get("x"))
     Assert.assertEquals(5, module.scope.get("y"))
   }
