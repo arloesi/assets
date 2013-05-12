@@ -6,7 +6,7 @@ import assets.*
 
 class Assets {
   @Test
-  void module() {
+  void script() {
     def module = new Module()
     module.evaluateString("this.count=4")
     def count = module.scope.get("count")
@@ -27,6 +27,5 @@ class Assets {
 
   @Test
   void less() {
-
   }
 }

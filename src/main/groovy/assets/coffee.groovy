@@ -7,7 +7,7 @@ class Coffee {
 
   Coffee(Module module) {
     this.module = module
-    module.evaluateFile("assets/coffee-script.js")
+    module.evaluateFile("assets/coffee.js")
   }
 
   String compile(String name, String source) {
