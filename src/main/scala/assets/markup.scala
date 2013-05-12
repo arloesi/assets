@@ -7,40 +7,18 @@ import org.mozilla.javascript._
 class Markup(module:Module,source:String) {
   module.evaluateFile(source)
 
-  val ctx = Context.enter()
-
-  val unwrap = module.get("__markup_unwrap_list")
-    .asInstanceOf[Function]
-
-  val (includes,scripts,styles,markup) = module.get("module") match {
-    case scope:Scriptable => {
-      val inc = scope.get("includes",scope) match {
-        case includes:Object =>
-          unwrap.call(ctx,module.scope,module.scope,Array(includes))
-            .asInstanceOf[List[String]]
-        case _ => new LinkedList[String]()
-      }
-
-      val scr = scope.get("scripts", scope) match {
-        case scripts:Object =>
-          unwrap.call(ctx,module.scope,module.scope,Array(scripts))
-            .asInstanceOf[List[String]]
-        case _ => new LinkedList[String]()
-      }
-
-      val stl = scope.get("styles", scope) match {
-        case styles:Object =>
-          unwrap.call(ctx,module.scope,module.scope,Array(styles))
-            .asInstanceOf[List[String]]
-        case _ => new LinkedList[String]()
-      }
-
-      (inc,scr,stl,scope.get("markup",scope))
-    }
+  val scope = {
+    val ctx = Context.enter()
+    val unwrap:Function = module.get("__markup_unwrap_module")
+    val scope = unwrap.call(ctx, module.scope, module.scope,Array()).asInstanceOf[Scriptable]
+    Context.exit()
+    scope
   }
 
-  Context.exit()
-
+  val includes = scope.get("includes",scope).asInstanceOf[List[String]]
+  val scripts = scope.get("scripts",scope).asInstanceOf[List[String]]
+  val inlines = scope.get("inlines",scope).asInstanceOf[List[String]]
+  val styles = scope.get("styles",scope).asInstanceOf[List[String]]
 
   def render() = {
     ""

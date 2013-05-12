@@ -21,8 +21,8 @@ class Module(val scope:Scriptable) {
     Context.exit()
     scope})
 
-  def get(name:String) = {
-    scope.get(name,scope)
+  def get[T<:Object](name:String):T = {
+    scope.get(name,scope).asInstanceOf[T]
   }
 
   def evaluateReader(source:String, reader:Reader) {

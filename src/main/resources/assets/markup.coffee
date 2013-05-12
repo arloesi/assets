@@ -256,6 +256,9 @@ markup.render = (template) ->
   writer.buffer = holder
   buffer.join ""
 
+markup.inline = (i) ->
+  inlines.push i
+
 unwrapList = (i) ->
   if typeof i == "undefined"
     new java.util.LinkedList()
@@ -264,10 +267,16 @@ unwrapList = (i) ->
     list.add i for i in items
     list
 
+unwrapInlines = ->
+  list = new java.util.LinkedList()
+  list.add "\n(#{i}).call(this);\n" for i in inlines
+  list
+
 this.__markup_unwrap_module = ->
   includes: unwrapList module.includes
   scripts: unwrapList module.scripts
   styles: unwrapList module.styles
+  inlines: unwrapInlines()
 
   render: (scripts,styles) ->
     markup.render ->
