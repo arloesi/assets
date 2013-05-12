@@ -9,7 +9,9 @@
 # [Markaby](http://markaby.rubyforge.org/) by Tim Fletcher and why the lucky
 # stiff.
 
-markup = global
+this.java =  Packages.java
+
+markup = this
 version = '0.1'
 # coffee = CoffeeScript
 
@@ -254,8 +256,30 @@ markup.render = (template) ->
   writer.buffer = holder
   buffer.join ""
 
-this.__markup_unwrap_list = (items) ->
-  list = new Packages.java.util.LinkedList()
-  list.add i for i in items
-  list
+unwrapList = (i) ->
+  if typeof i == "undefined"
+    new java.util.LinkedList()
+  else
+    list = new java.util.LinkedList()
+    list.add i for i in items
+    list
+
+this.__markup_unwrap_module = ->
+  includes: unwrapList module.includes
+  scripts: unwrapList module.scripts
+  styles: unwrapList module.styles
+
+  render: (scripts,styles) ->
+    markup.render ->
+      html ->
+        head ->
+          runtime()
+
+          link rel:"stylesheet",href:i for i in styles
+          script type:"tet/javascript",src:i for i in scripts
+
+          module.markup.head()
+
+        body ->
+          module.markup.body()
 
