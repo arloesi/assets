@@ -1,13 +1,20 @@
 package assets.test
 
-import org.gradle.api.*
-
 import org.junit.*
-import org.junit.Assert.*
 
 class Assets {
   @Test
+  void module() {
+
+  }
+
+  @Test
   void coffee() {
+
+  }
+
+  @Test
+  void less() {
 
   }
 }

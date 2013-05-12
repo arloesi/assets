@@ -5,6 +5,8 @@ apply plugin: "eclipse"
 ext {
   rhino="1.7R4"
   junit="4.11"
+  scala="2.9.3"
+  test="2.0.M5b"
 }
 
 repositories {
@@ -15,6 +17,7 @@ dependencies {
   compile gradleApi()
   compile localGroovy()
   compile group:"org.mozilla",name:"rhino",version:rhino
+
   testCompile group:"junit",name:"junit",version:junit
 }
 
