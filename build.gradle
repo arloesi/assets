@@ -34,7 +34,7 @@ sourceSets {
     }
 
     resources {
-      srcDirs = ["src/main/resources"]
+      srcDirs = ["src/main/resources","src/test/resources"]
     }
   }
 }
