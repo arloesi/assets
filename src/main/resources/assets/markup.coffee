@@ -256,9 +256,6 @@ markup.render = (template) ->
   writer.buffer = holder
   buffer.join ""
 
-markup.inline = (i) ->
-  inlines.push i
-
 unwrapList = (i) ->
   if typeof i == "undefined"
     new java.util.LinkedList()
@@ -267,28 +264,38 @@ unwrapList = (i) ->
     list.add i for i in items
     list
 
-unwrapInlines = ->
+unwrapInlines = (inlines) ->
   list = new java.util.LinkedList()
-  list.add "\n(#{i}).call(this);\n" for i in inlines
+  list.add "(#{i}).call(this);\n" for i in inlines
   list
 
-this.__markup_unwrap_module = ->
-  includes: unwrapList module.includes
-  scripts: unwrapList module.scripts
-  styles: unwrapList module.styles
-  inlines: unwrapInlines()
+unwrapTemplates = (templates) ->
+  list = new java.util.LinkedList()
+  list.add (markup.render i) for i in templates
+  list
 
-  render: (scripts,styles) ->
-    markup.render ->
-      html ->
-        head ->
-          runtime()
+this.__markup_unwrap_module = (module) ->
+  result =
+    includes: unwrapList module.includes
+    scripts: unwrapList module.scripts
+    styles: unwrapList module.styles
+    inlines: unwrapInlines module.inlines
 
-          link rel:"stylesheet",href:i for i in styles
-          script type:"tet/javascript",src:i for i in scripts
+  if typeof module["render"] != "undefined"
+    result.render (script,style,templates) ->
+      markup.render ->
+        html ->
+          head ->
+            runtime()
 
-          module.markup.head()
+            link rel:"stylesheet",href:style
+            script type:"tet/javascript",src:script
 
-        body ->
-          module.markup.body()
+            module.markup.head()
+
+          body ->
+            module.markup.body()
+            text i for i in (unwrapTemplates module.templates)
+
+  result
 
