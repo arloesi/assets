@@ -254,3 +254,8 @@ markup.render = (template) ->
   writer.buffer = holder
   buffer.join ""
 
+this.__markup_unwrap_list = (items) ->
+  list = new Packages.java.util.LinkedList()
+  list.add i for i in items
+  list
+
