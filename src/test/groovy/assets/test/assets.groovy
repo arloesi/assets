@@ -27,5 +27,8 @@ class Assets {
 
   @Test
   void less() {
+    def less = new Less()
+    def style = less.compile("@padding:8px;\n.dialog {padding:@padding;}\n")
+    System.out.println("style:"+style)
   }
 }
