@@ -1,10 +1,9 @@
 
-inline ->
-  div "xxx..."
-
 this.module =
-  scripts: ["common.js","main.js"]
-  styles: ["common.css","main.css"]
+  include:  ["common","utilities"]
+
+  scripts:  ["common","main"]
+  styles:   ["common","main"]
 
   markup: master
     head: ->

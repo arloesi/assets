@@ -6,7 +6,7 @@ import assets.*
 
 class Assets {
   @Test
-  void script() {
+  void module() {
     def module = new Module()
     module.evaluateString("this.count=4")
     def count = module.scope.get("count")
@@ -30,5 +30,15 @@ class Assets {
     def less = new Less()
     def style = less.compile("@padding:8px;\n.dialog {padding:@padding;}\n")
     System.out.println("style:"+style)
+  }
+
+  @Test
+  void markup() {
+
+  }
+
+  @Test
+  void build() {
+
   }
 }
