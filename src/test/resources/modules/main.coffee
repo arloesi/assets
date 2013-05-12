@@ -1,6 +1,6 @@
 
 this.module =
-  include:  ["common","utilities"]
+  include:  ["common"]
 
   scripts:  ["common","main"]
   styles:   ["common","main"]

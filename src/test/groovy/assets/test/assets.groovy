@@ -34,7 +34,7 @@ class Assets {
 
   @Test
   void markup() {
-    // def markup = new Markup()
+    def markup = new Markup("modules/main.coffee")
 
   }
 
