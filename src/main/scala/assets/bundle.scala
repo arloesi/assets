@@ -14,6 +14,10 @@ import org.mozilla.javascript._
 object Bundle {
   val context = new Context()
   val compilers = new HashMap[String,Compiler]()
+
+  def loadMarkup(scope:Object):List[String] = {
+    null
+  }
 }
 
 abstract class Bundle(val name:String) {
@@ -22,7 +26,7 @@ abstract class Bundle(val name:String) {
   val context = new Context(Bundle.context)
   val loader = getClass().getClassLoader()
 
-  val includes:List[Bundle] = Nil
+  val bundles:List[Bundle] = Nil
   val scripts:List[String] = Nil
   val styles:List[String] = Nil
 
@@ -32,6 +36,36 @@ abstract class Bundle(val name:String) {
         IOUtils.toString(loader.getResourceAsStream("modules/"+name+".coffee")))))
     context.get("module").asInstanceOf[Scriptable]
   }
+
+  lazy val script:String = {
+    val builder = new StringBuilder()
+
+    for(i <- bundles) {
+      builder.append(i.script)
+    }
+
+    for(i <- scripts) {
+      builder.append(IOUtils.toString(loader.getResourceAsStream(i)))
+    }
+
+    builder.toString()
+  }
+
+  lazy val style:String = {
+    val builder = new StringBuilder()
+
+    for(i <- bundles) {
+      builder.append(i.style)
+    }
+
+    for(i <- styles) {
+      builder.append(IOUtils.toString(loader.getResourceAsStream(i)))
+    }
+
+    builder.toString()
+  }
+
+  lazy val markup = loadMarkup(module.get("markup",module))
 }
 
 abstract class Module(name:String,compilers:Map[String,Compiler]) extends Bundle(name) {

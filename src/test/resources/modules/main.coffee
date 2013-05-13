@@ -5,7 +5,6 @@ this.module =
   markup:
     dialog: ->
 
-
   master:
     head: ->
       title "Home"
