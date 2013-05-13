@@ -1,6 +1,6 @@
 
 assets {
-  optimize = true
+  /*optimize = true
   target = "assets"
 
   bundles {
@@ -25,5 +25,5 @@ assets {
       styles = ["login"]
       markup = ["login"]
     }
-  }
+  }*/
 }
