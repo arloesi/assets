@@ -1,6 +1,6 @@
 package assets
 
-// import java.util._
+import java.util.{List}
 import scala.collection.JavaConversions._
 
 import org.gradle.api._
@@ -12,13 +12,15 @@ class Plugin extends org.gradle.api.Plugin[Project] {
   val less = new Less()
 
   def apply(project:Project) {
+    println("apply!")
     project.getExtensions().create("assets",classOf[Extensions])
     project.task(Map("type"->classOf[Task]),"assets")
   }
 }
 
 class Extensions {
-  var modules:String = "assets"
+  var optimize = false
+  var target = "assets"
 }
 
 class Task extends DefaultTask {

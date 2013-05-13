@@ -8,7 +8,8 @@ import org.junit._
 import org.scalatest.junit._
 import org.gradle.{GradleLauncher,StartParameter}
 import org.gradle.testfixtures._
-import org.gradle.api.Project
+import org.gradle.api.{Project}
+import org.gradle.api.logging.{StandardOutputListener}
 import assets._
 
 class Assets extends AssertionsForJUnit {
@@ -17,13 +18,5 @@ class Assets extends AssertionsForJUnit {
     val project = ProjectBuilder.builder().build()
     project.apply(Map("plugin"->"assets"))
     assert(project.getTasks().getByName("assets").isInstanceOf[Task])
-  }
-
-  @Test
-  def build() {
-    val params = new StartParameter()
-    params.setProjectDir(new File("src/test/resources"))
-    val launcher = GradleLauncher.newInstance(params)
-    launcher.run()
   }
 }

@@ -1,4 +1,20 @@
 
+apply plugin:"assets"
+
+buildscript {
+  repositories {
+    mavenCentral()
+
+    maven {
+      url "https://github.com/arloesi/maven/raw/master"
+    }
+  }
+
+  dependencies {
+    classpath group:"arloesi",name:"assets",version:"1.0"
+  }
+}
+
 assets {
   /*optimize = true
   target = "assets"

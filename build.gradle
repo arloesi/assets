@@ -1,6 +1,7 @@
 
-apply plugin: "scala"
-apply plugin: "eclipse"
+apply plugin:"scala"
+apply plugin:"eclipse"
+apply plugin:"maven"
 
 ext {
   scalaVersion = "2.9.3"
@@ -50,6 +51,20 @@ sourceSets {
 
     resources {
       srcDirs = ["src/main/resources","src/test/resources"]
+    }
+  }
+}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      repository(url:uri("../maven"))
+
+      pom {
+        groupId = "arloesi"
+        artifactId = "assets"
+        version = "0.1"
+      }
     }
   }
 }
