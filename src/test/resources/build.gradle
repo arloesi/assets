@@ -1,13 +1,29 @@
 
 assets {
   optimize = true
+  target = "assets"
 
   bundles {
     common {
       styles = ["common","layout"]
-      scripts = ["common","utility"]
+      scripts= ["common","utility"]
+      images = ["assets/images"]
+      markup = ["common"]
     }
   }
 
-  modules = ["main","login"]
+  modules {
+    main {
+      include = ["common"]
+      scripts = ["main"]
+      styles = ["main"]
+      markup = ["main"]
+    }
+
+    login {
+      scripts = ["login"]
+      styles = ["login"]
+      markup = ["login"]
+    }
+  }
 }

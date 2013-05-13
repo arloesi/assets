@@ -1,11 +1,12 @@
 
 this.module =
-  include:  []
-
-  scripts:  ["common","main"]
-  styles:   ["common","main"]
+  inline: []
 
   markup:
+    dialog: ->
+
+
+  master:
     head: ->
       title "Home"
 

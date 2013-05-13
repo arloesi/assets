@@ -11,7 +11,7 @@ import org.scalatest.junit._
 import assets._
 
 class Markup extends AssertionsForJUnit {
-  val coffee = new Coffee(new Module())
+  /*val coffee = new Coffee(new Module())
   val less = new Less()
 
   val module = new Module()
@@ -26,14 +26,9 @@ class Markup extends AssertionsForJUnit {
     "main",coffee,less)
 
   @Test
-  def initialize() {
-    /*assert(markup.includes.size() === 1)
-    assert(markup.styles.size() === 2)
-    assert(markup.scripts.size() === 2)*/
-  }
-
-  @Test
   def render() {
-    System.out.println("render: "+markup.markup)
-  }
+    System.out.println("markup: "+markup.markup)
+    System.out.println("script: "+markup.script)
+    System.out.println("styles: "+markup.style)
+  }*/
 }

@@ -6,9 +6,11 @@ import org.mozilla.javascript._
 import assets._
 
 class Assets extends AssertionsForJUnit {
+  type Context = assets.Context
+
   @Test
   def module() {
-    val module = new Module()
+    val module = new Context()
     module.evaluateString("this.count=4")
     val count = module.get("count")
       .asInstanceOf[Double]
@@ -17,11 +19,11 @@ class Assets extends AssertionsForJUnit {
 
   @Test
   def coffee() {
-    val coffee = new Coffee(new Module())
+    val coffee = new Coffee(new Context())
     val script = coffee.compile("<inline>","x=4\nthis.y=5")
       .asInstanceOf[String]
 
-    val module = new Module()
+    val module = new Context()
     module.evaluateString(script)
 
     Assert.assertNotEquals(4.0, module.get("x"))

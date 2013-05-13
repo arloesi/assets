@@ -3,7 +3,23 @@ package assets
 import java.io._
 import org.mozilla.javascript._
 
-class Module(val scope:Scriptable) {
+object Context {
+  def enter() = {
+    val ctx = org.mozilla.javascript.Context.enter()
+    ctx.setOptimizationLevel(0)
+    ctx
+  }
+
+  def exit() {
+    org.mozilla.javascript.Context.exit()
+  }
+
+  def javaToJS(entity:Object,scope:Scriptable) = {
+    org.mozilla.javascript.Context.javaToJS(entity, scope)
+  }
+}
+
+class Context(val scope:Scriptable) {
   def this() = this({
     val ctx = Context.enter()
     val scope = ctx.initStandardObjects()
@@ -14,7 +30,7 @@ class Module(val scope:Scriptable) {
     Context.exit()
     scope})
 
-  def this(module:Module) = this({
+  def this(module:Context) = this({
     val ctx = Context.enter()
     val scope = ctx.newObject(module.scope)
     scope.setParentScope(module.scope)

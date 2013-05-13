@@ -8,7 +8,7 @@ import scala.collection.JavaConverters._
 import org.apache.commons.io._
 import org.mozilla.javascript._
 
-class Coffee(module:Module) {
+class Coffee(module:Context) {
   module.evaluateFile("assets/coffee.js")
 
   def compile(source:String):String = {
