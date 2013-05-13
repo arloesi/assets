@@ -19,5 +19,5 @@ class Plugin extends org.gradle.api.Plugin[Project] {
 }
 
 class Extensions {
-  var src = "assets"
+  var modules: = "assets"
 }
