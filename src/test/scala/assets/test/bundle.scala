@@ -18,7 +18,6 @@ class Bundle extends AssertionsForJUnit {
 
   @Test
   def render() {
-    // System.out.println("markup: "+markup.markup)
     System.out.println("script: "+markup.script)
     System.out.println("styles: "+markup.style)
   }
