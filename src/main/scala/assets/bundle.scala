@@ -12,10 +12,21 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.mozilla.javascript._
 
 object Bundle {
+  val coffee = new Coffee(new Context())
+  val less = new Less()
+
   val context = new Context()
+  context.evaluateReader("markup",
+    new StringReader(coffee.compile("markup",
+      IOUtils.toString(getClass().getClassLoader().getResourceAsStream("assets/markup.coffee")))))
+
   val compilers = new HashMap[String,Compiler]()
 
   def loadMarkup(scope:Object):List[String] = {
+    null
+  }
+
+  def loadInline(scope:Object):List[String] = {
     null
   }
 }
@@ -66,6 +77,7 @@ abstract class Bundle(val name:String) {
   }
 
   lazy val markup = loadMarkup(module.get("markup",module))
+  lazy val inline = loadInline(module.get("inline",module))
 }
 
 abstract class Module(name:String,compilers:Map[String,Compiler]) extends Bundle(name) {
