@@ -8,11 +8,11 @@ bundles {
 }
 
 modules {
-  main {
+  home {
     include = ["common"]
-    scripts = ["main"]
-    styles = ["main"]
-    markup = ["main"]
+    scripts = ["home"]
+    styles = ["home"]
+    markup = ["home"]
   }
 
   login {

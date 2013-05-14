@@ -14,7 +14,6 @@ class Plugin extends org.gradle.api.Plugin[Project] {
   def apply(project:Project) {
     println("apply!")
     project.getExtensions().create("assets",classOf[Extension])
-    project.getExtensions().create("bundles",classOf[LinkedHashMap[String,Object]])
     project.task(Map("type"->classOf[Task]),"assets")
   }
 }
@@ -27,10 +26,6 @@ class Extension {
   private var target = "assets"
   def setTarget(value:String) {this.target=target}
   def getTarget() = {this.target}
-
-  private var bundles = new LinkedHashMap[String,Object]()
-  def setBundles(bundles:LinkedHashMap[String,Object]) {this.bundles=bundles}
-  def getBundles() = {this.bundles}
 }
 
 class Task extends DefaultTask {
@@ -39,6 +34,5 @@ class Task extends DefaultTask {
     val extension = getProject().getExtensions().getByName("assets").asInstanceOf[Extension]
     println("optimize: "+extension.getOptimize())
     println("target: "+extension.getTarget())
-    println("bundles: "+extension.getBundles().size())
   }
 }
