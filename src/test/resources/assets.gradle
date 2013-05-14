@@ -2,8 +2,11 @@ bundles {
   common {
     styles = ["common","layout"]
     scripts= ["common","utility"]
-    images = ["assets/images"]
     markup = ["common"]
+
+    images {
+      styles.images = ["library/jquery-ui/css/ui-lightness/images"]
+    }
   }
 }
 
