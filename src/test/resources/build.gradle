@@ -16,30 +16,6 @@ buildscript {
 }
 
 assets {
-  /*optimize = true
+  optimize = true
   target = "assets"
-
-  bundles {
-    common {
-      styles = ["common","layout"]
-      scripts= ["common","utility"]
-      images = ["assets/images"]
-      markup = ["common"]
-    }
-  }
-
-  modules {
-    main {
-      include = ["common"]
-      scripts = ["main"]
-      styles = ["main"]
-      markup = ["main"]
-    }
-
-    login {
-      scripts = ["login"]
-      styles = ["login"]
-      markup = ["login"]
-    }
-  }*/
 }

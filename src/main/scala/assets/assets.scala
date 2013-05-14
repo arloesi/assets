@@ -14,6 +14,7 @@ class Plugin extends org.gradle.api.Plugin[Project] {
   def apply(project:Project) {
     println("apply!")
     project.getExtensions().create("assets",classOf[Extension])
+    project.getExtensions().create("bundles",classOf[LinkedHashMap[String,Object]])
     project.task(Map("type"->classOf[Task]),"assets")
   }
 }
@@ -27,9 +28,9 @@ class Extension {
   def setTarget(value:String) {this.target=target}
   def getTarget() = {this.target}
 
-  private var bundles:java.util.Map[String,Object]) = new LinkedHashMap[String,Object]()
-  def setBundles(bundles:Map[String,Object]) {this.bundles=bundles}
-  def getBundles():Map[String,Object]) = {this.bundles}
+  private var bundles = new LinkedHashMap[String,Object]()
+  def setBundles(bundles:LinkedHashMap[String,Object]) {this.bundles=bundles}
+  def getBundles() = {this.bundles}
 }
 
 class Task extends DefaultTask {
