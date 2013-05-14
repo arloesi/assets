@@ -31,6 +31,7 @@ class Extension {
 class Task extends DefaultTask {
   @TaskAction
   def compile() {
+    println("compile!")
     val extension = getProject().getExtensions().getByName("assets").asInstanceOf[Extension]
     println("optimize: "+extension.getOptimize())
     println("target: "+extension.getTarget())
