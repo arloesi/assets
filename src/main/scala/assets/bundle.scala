@@ -11,7 +11,10 @@ import org.apache.commons.codec.digest.DigestUtils
 
 import org.mozilla.javascript._
 
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+
 object Bundle {
+  val matcher = new PathMatchingResourcePatternResolver()
   val coffee = new Coffee(new Context())
   val less = new Less()
 
@@ -29,9 +32,45 @@ object Bundle {
   def loadInline(scope:Object):List[String] = {
     null
   }
+
+  def loadImages(assets:Map[String,Object]) = {
+    val images = assets.get("images")
+    val list = new LinkedList[(String,String)]()
+
+    def parse(target:String,source:Object) {
+      source match {
+        case m:Map[String,Object] => {
+          for((k,v) <- m) {
+            parse(target+"/"+k,v)
+          }
+        }
+        case l:List[String] => {
+          for(i <- l) {
+            val f = new File(i)
+
+            if(f.isFile()) {
+              list.add((i,target+"/"+i))
+            } else if(f.isDirectory()) {
+              for(r <- matcher.getResources(i+"/**/*.png")) {
+                list.add((r.getFile().getPath(),target+"/"+r.getFile().getPath()))
+              }
+            } else {
+              throw new FileNotFoundException(f.getPath())
+            }
+          }
+        }
+      }
+    }
+
+    if(images != null) {
+      parse("",images)
+    }
+
+    list
+  }
 }
 
-abstract class Bundle(val name:String) {
+abstract class Bundle(val name:String, assets:Map[String,Object]) {
   import Bundle._
 
   val context = new Context(Bundle.context)
@@ -80,6 +119,6 @@ abstract class Bundle(val name:String) {
   lazy val inline = loadInline(module.get("inline",module))
 }
 
-abstract class Module(name:String,compilers:Map[String,Compiler]) extends Bundle(name) {
+abstract class Module(name:String,assets:Map[String,Object]) extends Bundle(name,assets) {
 
 }
