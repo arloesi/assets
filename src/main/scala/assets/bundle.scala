@@ -46,7 +46,7 @@ object Bundle {
         }
         case l:List[String] => {
           for(i <- l) {
-            val f = new File(i)
+            val f = matcher.getResource(i).getFile()
 
             if(f.isFile()) {
               list.add((i,target+"/"+i))

@@ -5,7 +5,9 @@ bundles {
     markup = ["common"]
 
     images {
-      styles.images = ["library/jquery-ui/css/ui-lightness/images"]
+      styles {
+        images = ["assets/images"]
+      }
     }
   }
 }
