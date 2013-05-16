@@ -8,6 +8,8 @@ import org.mozilla.javascript._
 import org.lesscss.LessCompiler
 
 object Compiler {
+  import Context._
+
   class Coffee(module:Context) {
     module.evaluateFile("assets/coffee.js")
 
@@ -18,13 +20,7 @@ object Compiler {
       val compile = coffee.get("compile",coffee)
         .asInstanceOf[Function]
 
-      val ctx = Context.enter()
-      val js = compile.call(ctx, module.scope, coffee, Array(source))
-        .asInstanceOf[String]
-
-      Context.exit()
-
-      js
+      withContext(ctx => compile.call(ctx, module.scope, coffee, Array(source)).asInstanceOf[String])
     }
   }
 
@@ -39,7 +35,7 @@ object Compiler {
   class Markup(context:Context,coffee:Coffee) extends Compiler {
     context.evaluateString(coffee.compile("markup",IOUtils.toString(getClass().getClassLoader().getResourceAsStream("assets/markup.coffee"))))
 
-    override def compile(name:String,source:String):String = {
+    override def compile(name:String,source:String):( = {
       null
     }
   }

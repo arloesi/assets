@@ -4,6 +4,8 @@ import java.io._
 import org.mozilla.javascript._
 
 object Context {
+  type Rhino = org.mozilla.javascript.Context
+
   def enter() = {
     val ctx = org.mozilla.javascript.Context.enter()
     ctx.setOptimizationLevel(0)
@@ -16,6 +18,13 @@ object Context {
 
   def javaToJS(entity:Object,scope:Scriptable) = {
     org.mozilla.javascript.Context.javaToJS(entity, scope)
+  }
+
+  def withContext[T](f:Rhino=>T):T = {
+    val ctx = enter()
+    val ret = f(ctx)
+    exit()
+    ret
   }
 }
 
