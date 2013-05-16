@@ -1,7 +1,7 @@
 package assets
 
 import java.io._
-import java.util.{List,LinkedList,LinkedHashMap,HashMap}
+import java.util.{List,LinkedList,LinkedHashMap,HashMap,HashSet}
 import scala.collection.JavaConversions._
 import groovy.util.ConfigSlurper
 
@@ -19,6 +19,14 @@ object Assets {
   val coffee = new Coffee(context)
   val less = new Less()
   val markup = new Markup(context,coffee)
+
+  def scriptPath(project:Project,script:String) = {
+    "scripts/"+FilenameUtils.getName(script)+".js"
+  }
+
+  def stylePath(project:Project,script:String) = {
+    "styles/"+FilenameUtils.getName(script)+".css"
+  }
 
   class Extension {
     private var optimize = false
@@ -72,7 +80,7 @@ object Assets {
     }
   }
 
-  class MarkupTask extends DefaultTask {
+  class ModuleTask extends DefaultTask {
     var bundle:Bundle = null
 
     @TaskAction
@@ -101,45 +109,56 @@ class Assets extends org.gradle.api.Plugin[Project] {
   import Assets._
 
   def apply(project:Project) {
-    project.getExtensions().create("assets",classOf[Extension])
-    val config = new ConfigSlurper().parse(getClass().getClassLoader().getResource("assets.gradle"))
-    val tasks = new LinkedList[Task]()
-
     val factory = new HashMap[String,Bundle]()
+    val imports = new HashSet[String]()
 
-    config.getProperty("bundles") match {
-      case null => ()
-      case modules:java.util.Map[String,Object] => {
-        for((k,v) <- modules) {
-          val bundle = new Bundle(factory,k,v.asInstanceOf[java.util.Map[String,Object]])
+    def parse(source:String,root:Boolean) {
+      val config = new ConfigSlurper().parse(getClass().getClassLoader().getResource(source))
 
-          buildImageTasks(project,bundle.images)
-          buildScriptTasks(project,bundle.scripts)
-          buildStyleTasks(project,bundle.styles)
+      for(i <- config.getProperty("imports").asInstanceOf[List[String]]) {
+        imports.add(i)
+      }
+
+      for(i <- config.getProperty("include").asInstanceOf[List[String]]) {
+        parse(i,false)
+      }
+
+      config.getProperty("bundles") match {
+        case null => ()
+        case modules:java.util.Map[String,Object] => {
+          for((k,v) <- modules) {
+            val bundle = new Bundle(factory,k,v.asInstanceOf[java.util.Map[String,Object]])
+
+            buildImageTasks(project,bundle.images)
+            buildScriptTasks(project,bundle.scripts)
+            buildStyleTasks(project,bundle.styles)
+          }
         }
       }
-    }
 
-    config.getProperty("modules") match {
-      case null => ()
-      case modules:java.util.Map[String,Object] => {
-        for((k,v) <- modules) {
-          val bundle = new Bundle(factory,k,v.asInstanceOf[java.util.Map[String,Object]])
+      val main = project.task(Map("type"->classOf[AssetsTask]),"assets")
 
-          buildImageTasks(project,bundle.images)
-          buildScriptTasks(project,bundle.scripts)
-          buildStyleTasks(project,bundle.styles)
+      config.getProperty("modules") match {
+        case null => ()
+        case modules:java.util.Map[String,Object] => {
+          for((k,v) <- modules) {
+            if(root || imports.contains(k)) {
+              val bundle = new Bundle(factory,k,v.asInstanceOf[java.util.Map[String,Object]])
 
-          // module
-          buildScriptTask(project,bundle)
-          buildStyleTask(project,bundle)
-          buildMarkupTask(project,bundle)
+              buildImageTasks(project,bundle.images)
+              buildScriptTasks(project,bundle.scripts)
+              buildStyleTasks(project,bundle.styles)
+              buildModuleTask(project,bundle)
+
+              main.dependsOn(bundle.name)
+              bundle.images_r(i => main.dependsOn(i._2))
+            }
+          }
         }
       }
-    }
 
-    val main = project.task(Map("type"->classOf[AssetsTask]),"assets")
-    tasks.foreach(main.getDependsOn().add _)
+      parse("assets.gradle",true)
+    }
   }
 
   def buildImageTasks(project:Project,images:List[(String,String)]) = {
@@ -206,15 +225,13 @@ class Assets extends org.gradle.api.Plugin[Project] {
     buildFileTask(project,classOf[LessTask],source,target)
   }
 
-  def buildScriptTask(project:Project,bundle:Bundle) {
+  def buildModuleTask(project:Project,bundle:Bundle) {
+    val task = project.task(Map("type"->classOf[ModuleTask]),bundle.name).asInstanceOf[ModuleTask]
+    task.bundle = bundle
 
-  }
+    bundle.scripts_r(x => task.dependsOn(scriptPath(project,x)))
+    bundle.styles_r(x => task.dependsOn(stylePath(project,x)))
 
-  def buildStyleTask(project:Project,bundle:Bundle) {
-
-  }
-
-  def buildMarkupTask(project:Project,bundle:Bundle) {
-
+    task
   }
 }

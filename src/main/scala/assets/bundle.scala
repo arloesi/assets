@@ -84,6 +84,10 @@ class Bundle(val factory:HashMap[String,Bundle],val name:String,val assets:Map[S
     parse(this)
   }
 
+  def bundles_r(f:Bundle=>Unit) {
+    parse_r(f)
+  }
+
   def scripts_r(f:String=>Unit) {
     parse_r(x => x.scripts.foreach(f))
   }
