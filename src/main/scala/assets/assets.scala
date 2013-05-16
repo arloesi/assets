@@ -1,7 +1,7 @@
 package assets
 
 import java.io._
-import java.util.{List,LinkedList,LinkedHashMap}
+import java.util.{List,LinkedList,LinkedHashMap,HashMap}
 import scala.collection.JavaConversions._
 import groovy.util.ConfigSlurper
 
@@ -80,11 +80,11 @@ object Assets {
       val module = markup.compile(bundle.name, bundle.source)
 
       val script = new StringBuilder()
-      bundle.scripts(i => script.append(FileUtils.readFileToString(new File(i))))
+      bundle.scripts_r(i => script.append(FileUtils.readFileToString(new File(i))))
       module.inlines.foreach(script.append _)
 
       val style = new StringBuilder()
-      bundle.styles(i => style.append(FileUtils.readFileToString(new File(i))))
+      bundle.styles_r(i => style.append(FileUtils.readFileToString(new File(i))))
 
       val scriptName = DigestUtils.md5(script.toString()).toString()
       FileUtils.write(new File(scriptName), script.toString())
@@ -105,11 +105,26 @@ class Assets extends org.gradle.api.Plugin[Project] {
     val config = new ConfigSlurper().parse(getClass().getClassLoader().getResource("assets.gradle"))
     val tasks = new LinkedList[Task]()
 
+    val factory = new HashMap[String,Bundle]()
+
+    config.getProperty("bundles") match {
+      case null => ()
+      case modules:java.util.Map[String,Object] => {
+        for((k,v) <- modules) {
+          val bundle = new Bundle(factory,k,v.asInstanceOf[java.util.Map[String,Object]])
+
+          buildImageTasks(project,bundle.images)
+          buildScriptTasks(project,bundle.scripts)
+          buildStyleTasks(project,bundle.styles)
+        }
+      }
+    }
+
     config.getProperty("modules") match {
       case null => ()
       case modules:java.util.Map[String,Object] => {
         for((k,v) <- modules) {
-          val bundle = new Bundle(k,v.asInstanceOf[java.util.Map[String,Object]])
+          val bundle = new Bundle(factory,k,v.asInstanceOf[java.util.Map[String,Object]])
 
           buildImageTasks(project,bundle.images)
           buildScriptTasks(project,bundle.scripts)
@@ -138,32 +153,34 @@ class Assets extends org.gradle.api.Plugin[Project] {
     tasks
   }
 
-  def buildScriptTasks(project:Project,scripts:List[(String,String)]) = {
+  def buildScriptTasks(project:Project,scripts:List[String]) = {
     val tasks = new LinkedList[Task]()
 
-    for((s,t) <- scripts) {
-      val ext = FilenameUtils.getExtension(s)
+    for(source <- scripts) {
+      val target = FilenameUtils.getName(source)+".js"
+      val ext = FilenameUtils.getExtension(source)
 
       if(ext == "js") {
-        tasks.add(buildCopyTask(project,s,t))
+        tasks.add(buildCopyTask(project,source,target))
       } else {
-        tasks.add(buildCoffeeTask(project,s,t))
+        tasks.add(buildCoffeeTask(project,source,target))
       }
     }
 
     tasks
   }
 
-  def buildStyleTasks(project:Project,styles:List[(String,String)]) = {
+  def buildStyleTasks(project:Project,styles:List[String]) = {
     val tasks = new LinkedList[Task]()
 
-    for((s,t) <- styles) {
-      val ext = FilenameUtils.getExtension(s)
+    for(source <- styles) {
+      val target = FilenameUtils.getName(source)+".css"
+      val ext = FilenameUtils.getExtension(source)
 
       if(ext == "css") {
-        tasks.add(buildCopyTask(project,s,t))
+        tasks.add(buildCopyTask(project,source,target))
       } else {
-        tasks.add(buildLessTask(project,s,t))
+        tasks.add(buildLessTask(project,source,target))
       }
     }
 

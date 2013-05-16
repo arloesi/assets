@@ -17,7 +17,7 @@ object Bundle {
   val matcher = new PathMatchingResourcePatternResolver()
 }
 
-class Bundle(val name:String,assets:Map[String,Object]) {
+class Bundle(val factory:HashMap[String,Bundle],val name:String,val assets:Map[String,Object]) {
   import Bundle._
 
   type Node = Map[String,Object]
@@ -71,4 +71,28 @@ class Bundle(val name:String,assets:Map[String,Object]) {
         list
       }
     }
+
+  def parse_r(f:Bundle=>Unit) {
+    def parse(bundle:Bundle) {
+      for(i <- bundle.assets.get("includes").asInstanceOf[List[String]]) {
+        parse(factory.get(i))
+      }
+
+      f(bundle)
+    }
+
+    parse(this)
+  }
+
+  def scripts_r(f:String=>Unit) {
+    parse_r(x => x.scripts.foreach(f))
+  }
+
+  def styles_r(f:String=>Unit) {
+    parse_r(x => x.styles.foreach(f))
+  }
+
+  def images_r(f:((String,String))=>Unit) {
+    parse_r(x => x.images.foreach(f))
+  }
 }
