@@ -33,28 +33,37 @@ object Compiler {
   }
 
   class Markup(context:Context,coffee:Coffee) {
-    class Result {val inlines = new LinkedList[String]; val markup = new LinkedList[String]; var master:String = null}
+    class Module {
+      val inlines = new LinkedList[String];
+      val markup = new LinkedList[String];
+      var source:Scriptable = null
+
+      def master(script:String,style:String) = {
+        withContext(ctx => render.call(ctx,context.scope,source,Array(script,style,markup)).toString())
+      }
+    }
 
     context.evaluateString(coffee.compile("markup",IOUtils.toString(getClass().getClassLoader().getResourceAsStream("assets/markup.coffee"))))
     val unwrap:Function = context.get("__unwrapModule")
+    val render:Function = context.get("__renderModule")
 
-    override def compile(name:String,source:List[String]):Result = {
+    override def compile(name:String,source:List[String]):Module = {
       val context = new Context(this.context)
-      val result = new Result()
+      val result = new Module()
 
-      var unwrapped:Scriptable = null
+      var module:Scriptable = null
 
       for(i <- source) {
         context.evaluateString(i)
 
-        val module = context.get("module")
-        unwrapped = withContext(ctx => unwrap.call(ctx,context.scope,module,Array(module)).asInstanceOf[Scriptable])
+        module = context.get("module")
+        val unwrapped = withContext(ctx => unwrap.call(ctx,context.scope,module,Array(module)).asInstanceOf[Scriptable])
 
         result.inlines.addAll(unwrapped.get("inline",unwrapped).asInstanceOf[List[String]])
         result.markup.addAll(unwrapped.get("markup",unwrapped).asInstanceOf[List[String]])
       }
 
-      result.master = unwrapped.get("master",unwrapped).asInstanceOf[String]
+      result.source = module
 
       result
     }

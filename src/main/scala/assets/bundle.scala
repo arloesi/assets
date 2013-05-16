@@ -13,6 +13,6 @@ import org.mozilla.javascript._
 
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 
-class Bundle(name:String,assets:Map[String,Object]) {
-
+class Bundle(val name:String,assets:Map[String,Object]) {
+  val source = new LinkedList[String]()
 }

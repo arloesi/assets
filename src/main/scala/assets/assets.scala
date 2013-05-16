@@ -6,6 +6,7 @@ import scala.collection.JavaConversions._
 import groovy.util.ConfigSlurper
 
 import org.apache.commons.io._
+import org.apache.commons.codec.digest.DigestUtils
 
 import org.gradle.api.{Project,DefaultTask,Task}
 import org.gradle.api.plugins._
@@ -68,6 +69,30 @@ object Assets {
   class LessTask extends FileTask {
     override def compile() {
       save(less.compile(source.getPath(),load()))
+    }
+  }
+
+  class MarkupTask extends DefaultTask {
+    var bundle:Bundle = null
+
+    @TaskAction
+    def compile() {
+      val module = markup.compile(bundle.name, bundle.source)
+
+      val script = new StringBuilder()
+      bundle.scripts(i => script.append(FileUtils.readFileToString(new File(i))))
+      module.inlines.foreach(script.append _)
+
+      val style = new StringBuilder()
+      bundle.styles(i => style.append(FileUtils.readFileToString(new File(i))))
+
+      val scriptName = DigestUtils.md5(script.toString()).toString()
+      FileUtils.write(new File(scriptName), script.toString())
+
+      val styleName = DigestUtils.md5(style.toString()).toString()
+      FileUtils.write(new File(styleName), style.toString())
+
+      FileUtils.write(new File(bundle.name+".html"), module.master(scriptName,styleName))
     }
   }
 }

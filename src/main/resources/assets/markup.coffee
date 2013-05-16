@@ -256,6 +256,11 @@ markup.render = (template) ->
   writer.buffer = holder
   buffer.join ""
 
+foreach = (x,f) ->
+  i = x.iterator()
+  while i.hasNext()
+    f(i.next())
+
 unwrapList = (items) ->
   list = new java.util.LinkedList()
   if typeof items != "undefined"
@@ -268,34 +273,24 @@ unwrapInlines = (inlines) ->
     list.add "(#{i}).call(this);\n" for i in inlines
   list
 
-unwrapTemplates = (templates) ->
-  list = new java.util.LinkedList()
-  if typeof templates != "undefined"
-    list.add (markup.render i) for i in templates
-  list
+this.__unwrapModule = (module) ->
+  inlines: unwrapInlines module.inline
+  markup: unwrapList module.markup
+  master: module.master
 
-this.__markup_unwrap_module = (module) ->
-  result =
-    include: unwrapList module.include
-    scripts: unwrapList module.scripts
-    styles: unwrapList module.styles
-    inlines: unwrapInlines module.inlines
+this.__renderModule = (js,css,templates) ->
+  markup.render ->
+    html ->
+      head ->
+        runtime()
 
-  if typeof module["markup"] != "undefined"
-    result.render = (js,css,templates) ->
-      markup.render ->
-        html ->
-          head ->
-            runtime()
+        link type:"text/css",rel:"stylesheet",href:css
+        script type:"tet/javascript",src:js
 
-            link type:"text/css",rel:"stylesheet",href:css
-            script type:"tet/javascript",src:js
+        module.master.head()
 
-            module.markup.head()
-
-          body ->
-            module.markup.body()
-            text i for i in (unwrapTemplates module.templates)
-
-  result
+      body ->
+        module.master.body()
+        foreach templates, (i) ->
+          text (markup.render i)
 
