@@ -17,11 +17,13 @@ object Bundle {
   val matcher = new PathMatchingResourcePatternResolver()
 }
 
-class Bundle(val factory:HashMap[String,Bundle],val name:String,val assets:Map[String,Object]) {
+abstract class Bundle(val factory:HashMap[String,Bundle],val name:String,val assets:Map[String,Object]) {
   import Bundle._
 
   type Node = Map[String,Object]
   val source = new LinkedList[String]()
+
+  def initialize()
 
   lazy val scripts =
     assets.get("styles") match {

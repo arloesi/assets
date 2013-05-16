@@ -110,10 +110,11 @@ class Assets extends org.gradle.api.Plugin[Project] {
 
   def apply(project:Project) {
     val factory = new HashMap[String,Bundle]()
+    val bundles = new LinkedList[Bundle]()
     val imports = new HashSet[String]()
 
     def parse(source:String,root:Boolean) {
-      val config = new ConfigSlurper().parse(getClass().getClassLoader().getResource(source))
+      val config = new ConfigSlurper().parse(getClass().getClassLoader().getResource(source+"/assets.gradle"))
 
       for(i <- config.getProperty("imports").asInstanceOf[List[String]]) {
         imports.add(i)
@@ -127,11 +128,16 @@ class Assets extends org.gradle.api.Plugin[Project] {
         case null => ()
         case modules:java.util.Map[String,Object] => {
           for((k,v) <- modules) {
-            val bundle = new Bundle(factory,k,v.asInstanceOf[java.util.Map[String,Object]])
+            val bundle = new Bundle(factory,k,v.asInstanceOf[java.util.Map[String,Object]]) {
+              override def initialize() {
+                buildImageTasks(project,images)
+                buildScriptTasks(project,scripts)
+                buildStyleTasks(project,styles)
+              }
+            }
 
-            buildImageTasks(project,bundle.images)
-            buildScriptTasks(project,bundle.scripts)
-            buildStyleTasks(project,bundle.styles)
+            factory.put(bundle.name, bundle)
+            bundles.add(bundle)
           }
         }
       }
@@ -143,22 +149,27 @@ class Assets extends org.gradle.api.Plugin[Project] {
         case modules:java.util.Map[String,Object] => {
           for((k,v) <- modules) {
             if(root || imports.contains(k)) {
-              val bundle = new Bundle(factory,k,v.asInstanceOf[java.util.Map[String,Object]])
+              val bundle = new Bundle(factory,k,v.asInstanceOf[java.util.Map[String,Object]]) {
+                override def initialize() {
+                  buildImageTasks(project,images)
+                  buildScriptTasks(project,scripts)
+                  buildStyleTasks(project,styles)
+                  buildModuleTask(project,this)
 
-              buildImageTasks(project,bundle.images)
-              buildScriptTasks(project,bundle.scripts)
-              buildStyleTasks(project,bundle.styles)
-              buildModuleTask(project,bundle)
+                  main.dependsOn(name)
+                  images_r(i => main.dependsOn(i._2))
+                }
+              }
 
-              main.dependsOn(bundle.name)
-              bundle.images_r(i => main.dependsOn(i._2))
+              bundles.add(bundle)
             }
           }
         }
       }
-
-      parse("assets.gradle",true)
     }
+
+    parse(".",true)
+    bundles.foreach(i => i.initialize())
   }
 
   def buildImageTasks(project:Project,images:List[(String,String)]) = {
