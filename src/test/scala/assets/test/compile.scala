@@ -17,7 +17,7 @@ class Compile extends AssertionsForJUnit {
     Assert.assertEquals(4.0,count,0.0)
   }
 
-  @Test
+  /*@Test
   def coffee() {
     val coffee = new Coffee(new Context())
     val script = coffee.compile("<inline>","x=4\nthis.y=5")
@@ -35,5 +35,5 @@ class Compile extends AssertionsForJUnit {
     val less = new Less()
     val style = less.compile("@padding:8px;\n.dialog {padding:@padding;}\n")
     Assert.assertEquals(style.replaceAll("\\s+",""), ".dialog{padding:8px;}")
-  }
+  }*/
 }

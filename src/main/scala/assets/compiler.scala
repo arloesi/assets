@@ -13,7 +13,7 @@ object Compiler {
   class Coffee(module:Context) {
     module.evaluateFile("assets/coffee.js")
 
-    override def compile(name:String, source:String):String = {
+    def compile(name:String, source:String):String = {
       val coffee = module.get("CoffeeScript")
         .asInstanceOf[Scriptable]
 
@@ -27,7 +27,7 @@ object Compiler {
   class Less {
     val less = new LessCompiler()
 
-    override def compile(name:String,source:String):String = {
+    def compile(name:String,source:String):String = {
       less.compile(source)
     }
   }
@@ -47,7 +47,7 @@ object Compiler {
     val unwrap:Function = context.get("__unwrapModule")
     val render:Function = context.get("__renderModule")
 
-    override def compile(name:String,source:List[String]):Module = {
+    def compile(name:String,source:List[String]):Module = {
       val context = new Context(this.context)
       val result = new Module()
 

@@ -38,7 +38,7 @@ object Assets {
     }
   }
 
-  class FileTask extends DefaultTask {
+  abstract class FileTask extends DefaultTask {
     lazy val source = getInputs().getFiles().first
     lazy val target = getOutputs().getFiles().first
 
