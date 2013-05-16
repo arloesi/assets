@@ -32,11 +32,31 @@ object Compiler {
     }
   }
 
-  class Markup(context:Context,coffee:Coffee) extends Compiler {
-    context.evaluateString(coffee.compile("markup",IOUtils.toString(getClass().getClassLoader().getResourceAsStream("assets/markup.coffee"))))
+  class Markup(context:Context,coffee:Coffee) {
+    class Result {val inlines = new LinkedList[String]; val markup = new LinkedList[String]; var master:String = null}
 
-    override def compile(name:String,source:String):( = {
-      null
+    context.evaluateString(coffee.compile("markup",IOUtils.toString(getClass().getClassLoader().getResourceAsStream("assets/markup.coffee"))))
+    val unwrap:Function = context.get("__unwrapModule")
+
+    override def compile(name:String,source:List[String]):Result = {
+      val context = new Context(this.context)
+      val result = new Result()
+
+      var unwrapped:Scriptable = null
+
+      for(i <- source) {
+        context.evaluateString(i)
+
+        val module = context.get("module")
+        unwrapped = withContext(ctx => unwrap.call(ctx,context.scope,module,Array(module)).asInstanceOf[Scriptable])
+
+        result.inlines.addAll(unwrapped.get("inline",unwrapped).asInstanceOf[List[String]])
+        result.markup.addAll(unwrapped.get("markup",unwrapped).asInstanceOf[List[String]])
+      }
+
+      result.master = unwrapped.get("master",unwrapped).asInstanceOf[String]
+
+      result
     }
   }
 }
