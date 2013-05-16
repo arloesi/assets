@@ -4,7 +4,6 @@ bundles {
   common {
     styles = ["common","layout"]
     scripts= ["common","utility"]
-    markup = ["common"]
 
     images {
       styles {
@@ -19,12 +18,10 @@ modules {
     include = ["common"]
     scripts = ["home"]
     styles = ["home"]
-    markup = ["home"]
   }
 
   login {
     scripts = ["login"]
     styles = ["login"]
-    markup = ["login"]
   }
 }
