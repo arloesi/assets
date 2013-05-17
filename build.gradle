@@ -9,6 +9,7 @@ ext {
   groovyVersion = "2.1.2"
   junitVersion = "4.11"
   springVersion = "3.2.2.RELEASE"
+  nekoVersion = "1.9.17"
 }
 
 repositories {
@@ -25,6 +26,7 @@ dependencies {
   compile group:"org.lesscss",name:"lesscss",version:"1.3.3"
   // compile group:"commons-codec",name:"commons-codec",version:"1.8"
   compile group:"org.springframework", name:"spring-core", version:ext.springVersion
+  compile group:"net.sourceforge.nekohtml", name:"nekohtml", version:ext.nekoVersion
 
   testCompile group:"junit",name:"junit",version:ext.junitVersion
   testCompile group:"org.scalatest",name:"scalatest_$scalaVersion",version:ext.testVersion

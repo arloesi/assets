@@ -11,7 +11,9 @@ object Compiler {
   import Context._
 
   class Coffee(module:Context) {
+    println("begin evaluate")
     module.evaluateFile("assets/coffee.js")
+    println("end evaluate")
 
     def compile(name:String, source:String):String = {
       val coffee = module.get("CoffeeScript")
@@ -35,10 +37,14 @@ object Compiler {
   class Markup(context:Context,coffee:Coffee) {
     class Module {
       val inlines = new LinkedList[String];
-      val markup = new LinkedList[String];
+      val markup = new LinkedList[Scriptable];
       var source:Scriptable = null
 
       def master(bundle:Bundle,script:String,style:String) = {
+        if(this.source == null) {
+          throw new Exception("source module is null for in master")
+        }
+
         withContext(ctx => render.call(ctx,context.scope,source,Array(bundle.name,script,style,markup)).toString())
       }
     }
@@ -54,20 +60,26 @@ object Compiler {
       var module:Scriptable = null
 
       bundle.bundles_r(i => {
-        val file = new File(i.source+"/"+i.name+".coffee")
+        val file = new File(i.source+"/modules/"+i.name+".coffee")
+        println("path: "+file.getAbsolutePath())
 
-        if(file.exists()) {
+        // if(file.exists())
+        {
           context.evaluateString(coffee.compile(file.getPath(),FileUtils.readFileToString(file)))
 
           module = context.get("module")
           val unwrapped = withContext(ctx => unwrap.call(ctx,context.scope,module,Array(module)).asInstanceOf[Scriptable])
 
-          result.inlines.addAll(unwrapped.get("inline",unwrapped).asInstanceOf[List[String]])
-          result.markup.addAll(unwrapped.get("markup",unwrapped).asInstanceOf[List[String]])
+          result.inlines.addAll(Context.toType(unwrapped.get("inline",unwrapped),classOf[List[String]]))
+          result.markup.add(unwrapped.get("markup",unwrapped).asInstanceOf[Scriptable])
         }
       })
 
       result.source = module
+
+      if(result.source == null) {
+        throw new Exception("source module is null for '"+bundle.name+"'")
+      }
 
       result
     }

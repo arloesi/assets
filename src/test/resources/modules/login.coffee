@@ -1,11 +1,9 @@
 
 this.module =
-  include:  ["common"]
+  inline: []
+  markup: []
 
-  scripts:  ["common","login"]
-  styles:   ["common","login"]
-
-  markup: master
+  master:
     head: ->
       title "Login"
 

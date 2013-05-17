@@ -25,9 +25,10 @@ object Assets {
 
   def md5(source:String) = {
       val md = MessageDigest.getInstance("MD5");
-      val mdbytes = source.getBytes()
+      val dataBytes = source.getBytes()
+      md.update(dataBytes, 0, dataBytes.length);
+      val mdbytes = md.digest();
 
-      //convert the byte to hex format method 1
       val sb = new StringBuffer();
       for (i <- 0 until mdbytes.length) {
         sb.append(Integer.toString((mdbytes(i) & 0xff) + 0x100, 16).substring(1));
@@ -187,7 +188,7 @@ class Assets extends org.gradle.api.Plugin[Project] {
                   buildModuleTask(project,this)
 
                   main.dependsOn(name)
-                  images_r(i => main.dependsOn(i._2))
+                  images_r(i => main.dependsOn(targetPath(project,imagePath(i._2))))
                 }
               }
 
@@ -206,7 +207,7 @@ class Assets extends org.gradle.api.Plugin[Project] {
     val tasks = new LinkedList[Task]()
 
     for((s,t) <- images) {
-      val task = buildCopyTask(project,s,imagePath(t))
+      val task = buildCopyTask(project,sourcePath(s),imagePath(t))
       tasks.add(task)
     }
 

@@ -274,23 +274,26 @@ unwrapInlines = (inlines) ->
   list
 
 this.__unwrapModule = (module) ->
-  inlines: unwrapInlines module.inline
-  markup: unwrapList module.markup
+  inline: unwrapInlines module.inline
+  markup: module.markup
   master: module.master
 
 this.__renderModule = (name,js,css,templates) ->
+  module = this
+
   markup.render ->
     html ->
       head ->
         runtime()
 
-        link type:"text/css",rel:"stylesheet",href:"/assets/scripts/#{name}.css?version=#{css}"
-        script type:"tet/javascript",src:"/assets/styles/#{name}.js?version=#{js}"
+        link type:"text/css",rel:"stylesheet",href:"/assets/styles/#{name}.css?version=#{css}"
+        script type:"tet/javascript",src:"/assets/scripts/#{name}.js?version=#{js}"
 
         module.master.head()
 
       body ->
         module.master.body()
         foreach templates, (i) ->
-          text (markup.render i)
+          for k,v of i
+            script "##{k}",type:"text/html", v
 

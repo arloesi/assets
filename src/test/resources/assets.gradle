@@ -1,26 +1,23 @@
-// include = ["../kernel"]
+// include = ["../../../../kernel"]
 
 bundles {
   common {
-    styles = ["common","assets/styles/layout.less"]
-    scripts= ["common","assets/scripts/utility.coffee"]
-
-    images {
-      styles {
-        images = ["assets/images"]
-      }
-    }
+    styles = ["assets/styles/common.less","assets/styles/layout.less"]
+    scripts= ["assets/scripts/common.coffee","assets/scripts/utility.coffee"]
+    images = ["assets/images"]
   }
 }
 
 modules {
   home {
+    include = ["common"]
     scripts = ["assets/scripts/home.coffee"]
     styles = ["assets/styles/home.less"]
   }
 
-  /*login {
+  login {
+    include = ["common"]
     scripts = ["assets/scripts/login.coffee"]
     styles = ["assets/styles/login.less"]
-  }*/
+  }
 }

@@ -3,7 +3,8 @@ this.module =
   inline: []
 
   markup:
-    dialog: -> ""
+    dialog: ->
+      div "XXXXXX"
 
   master:
     head: ->

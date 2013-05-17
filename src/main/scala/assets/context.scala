@@ -20,6 +20,10 @@ object Context {
     org.mozilla.javascript.Context.javaToJS(entity, scope)
   }
 
+  def toType[T](value:Object,`type`:Class[T]):T = {
+    org.mozilla.javascript.Context.toType(value, `type`).asInstanceOf[T]
+  }
+
   def withContext[T](f:Rhino=>T):T = {
     val ctx = enter()
     val ret = f(ctx)

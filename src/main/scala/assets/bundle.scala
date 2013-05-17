@@ -45,7 +45,7 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
   lazy val images =
     assets.get("images") match {
       case null => new LinkedList[(String,String)]()
-      case images:Node => {
+      case images:Object => {
         val list = new LinkedList[(String,String)]()
 
         def parse(target:String,source:Object) {
@@ -57,19 +57,20 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
             }
             case l:List[String] => {
               for(i <- l) {
-                val f = new File(this.source+"/"+i)
+                val file = new File(this.source+"/"+i)
 
-                if(f.isFile()) {
-                  list.add((i,target+"/"+i))
-                } else if(f.isDirectory()) {
-                  val path = new File(this.source).getCanonicalPath()
+                if(file.isFile()) {
+                  val relative = FilenameUtils.getName(file.getName())
+                  list.add((file.getCanonicalPath(),target+"/"+relative))
+                } else if(file.isDirectory()) {
+                  val path = file.getCanonicalPath()
 
-                  for(r <- matcher.getResources("file:"+i+"/**/*.png")) {
+                  for(r <- matcher.getResources("file:"+file.getCanonicalPath()+"/**/*.png")) {
                     val relative = r.getFile().getCanonicalPath().substring(path.length())
-                    list.add((relative,target+"/"+relative))
+                    list.add((r.getFile().getCanonicalPath(),target+"/"+relative))
                   }
                 } else {
-                  throw new FileNotFoundException(f.getPath())
+                  throw new FileNotFoundException(file.getPath())
                 }
               }
             }
@@ -84,9 +85,9 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
 
   def parse_r(f:Bundle=>Unit) {
     def parse(bundle:Bundle) {
-      bundle.assets.get("includes") match {
+      bundle.assets.get("include") match {
         case list:List[String] =>
-          for(i <- bundle.assets.get("includes").asInstanceOf[List[String]]) {
+          for(i <- list) {
             parse(factory.get(i))
           }
         case _ => ()
