@@ -54,7 +54,7 @@ object Assets {
   }
 
   def imagePath(image:String) = {
-    "assets/images/"+image
+    "assets/"+image
   }
 
   class Extension {
@@ -123,7 +123,7 @@ object Assets {
 
       val style = new StringBuilder()
       bundle.styles_r(i => style.append(FileUtils.readFileToString(
-        new File(targetPath(getProject(),stylePath(i))))))
+        new File(targetPath(getProject(),stylePath(i._2))))))
 
       val scriptName = md5(script.toString()).toString()
       FileUtils.writeStringToFile(new File(baseDir+"/scripts/"+bundle.name+".js"), script.toString())
@@ -231,11 +231,11 @@ class Assets extends org.gradle.api.Plugin[Project] {
     tasks
   }
 
-  def buildStyleTasks(project:Project,styles:List[String]) = {
+  def buildStyleTasks(project:Project,styles:List[(String,String)]) = {
     val tasks = new LinkedList[Task]()
 
-    for(source <- styles) {
-      val target = stylePath(source)
+    for((source,targ) <- styles) {
+      val target = stylePath(targ)
       val ext = FilenameUtils.getExtension(source)
 
       if(ext == "css") {
@@ -259,7 +259,7 @@ class Assets extends org.gradle.api.Plugin[Project] {
     })
 
     bundle.styles_r(x => {
-      val path = targetPath(project,stylePath(x))
+      val path = targetPath(project,stylePath(x._2))
       task.dependsOn(path)
       task.getInputs().file(path)
     })

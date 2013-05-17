@@ -38,50 +38,55 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
 
   lazy val styles =
     assets.get("styles") match {
-      case null => new LinkedList[String]()
-      case list:List[String] => list.map(i => source+"/"+i):List[String]
+      case null => new LinkedList[(String,String)]()
+      case list:List[String] => list.map(i => (source+"/"+i,this.name+"/"+i)):List[(String,String)]
     }
 
-  lazy val images =
-    assets.get("images") match {
-      case null => new LinkedList[(String,String)]()
-      case images:Object => {
-        val list = new LinkedList[(String,String)]()
+  lazy val images = {
+    val list = new LinkedList[(String,String)]()
 
-        def parse(target:String,source:Object) {
-          source match {
-            case m:Node => {
-              for((k,v) <- m) {
-                parse(target+"/"+k,v)
+    for((k,images) <- assets) {
+      k match {
+        case "scripts" => ()
+        case "styles" => ()
+        case "modules" => ()
+        case name:String => {
+          def parse(target:String,source:Object) {
+            source match {
+              case m:Node => {
+                for((k,v) <- m) {
+                  parse(target+"/"+k,v)
+                }
               }
-            }
-            case l:List[String] => {
-              for(i <- l) {
-                val file = new File(this.source+"/"+i)
+              case l:List[String] => {
+                for(i <- l) {
+                  val file = new File(this.source+"/"+i)
 
-                if(file.isFile()) {
-                  val relative = FilenameUtils.getName(file.getName())
-                  list.add((file.getCanonicalPath(),target+"/"+relative))
-                } else if(file.isDirectory()) {
-                  val path = file.getCanonicalPath()
+                  if(file.isFile()) {
+                    val relative = FilenameUtils.getName(file.getName())
+                    list.add((file.getCanonicalPath(),target+"/"+relative))
+                  } else if(file.isDirectory()) {
+                    val path = file.getCanonicalPath()
 
-                  for(r <- matcher.getResources("file:"+file.getCanonicalPath()+"/**/*.png")) {
-                    val relative = r.getFile().getCanonicalPath().substring(path.length())
-                    list.add((r.getFile().getCanonicalPath(),target+"/"+relative))
+                    for(r <- matcher.getResources("file:"+file.getCanonicalPath()+"/**/*.png")) {
+                      val relative = r.getFile().getCanonicalPath().substring(path.length())
+                      list.add((r.getFile().getCanonicalPath(),target+"/"+relative))
+                    }
+                  } else {
+                    throw new FileNotFoundException(file.getPath())
                   }
-                } else {
-                  throw new FileNotFoundException(file.getPath())
                 }
               }
             }
           }
+
+          parse(name,images)
         }
-
-        parse(".",images)
-
-        list
       }
     }
+
+    list
+  }
 
   def parse_r(f:Bundle=>Unit) {
     def parse(bundle:Bundle) {
@@ -107,7 +112,7 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
     parse_r(x => x.scripts.foreach(f))
   }
 
-  def styles_r(f:String=>Unit) {
+  def styles_r(f:((String,String))=>Unit) {
     parse_r(x => x.styles.foreach(f))
   }
 
