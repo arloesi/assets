@@ -85,7 +85,7 @@ object Assets {
 
     @TaskAction
     def compile() {
-      val module = markup.compile(bundle.name, bundle.source)
+      val module = markup.compile(bundle.name, bundle.includes)
 
       val script = new StringBuilder()
       bundle.scripts_r(i => script.append(FileUtils.readFileToString(new File(i))))
@@ -112,23 +112,26 @@ class Assets extends org.gradle.api.Plugin[Project] {
     val factory = new HashMap[String,Bundle]()
     val bundles = new LinkedList[Bundle]()
     val imports = new HashSet[String]()
+    val main = project.task(Map("type"->classOf[AssetsTask]),"assets")
 
     def parse(source:String,root:Boolean) {
-      val config = new ConfigSlurper().parse(getClass().getClassLoader().getResource(source+"/assets.gradle"))
+      val config = new ConfigSlurper().parse(FileUtils.readFileToString(new File(source+"/assets.gradle")))
 
-      for(i <- config.getProperty("imports").asInstanceOf[List[String]]) {
-        imports.add(i)
+      config.getProperty("imports") match {
+        case list:List[String] => list.foreach(imports.add _)
+        case _ => ()
       }
 
-      for(i <- config.getProperty("include").asInstanceOf[List[String]]) {
-        parse(i,false)
+      config.getProperty("include") match {
+        case list:List[String] => list.foreach(i => parse(i,false))
+        case _ => ()
       }
 
       config.getProperty("bundles") match {
         case null => ()
         case modules:java.util.Map[String,Object] => {
           for((k,v) <- modules) {
-            val bundle = new Bundle(factory,k,v.asInstanceOf[java.util.Map[String,Object]]) {
+            val bundle = new Bundle(factory,k,source,v.asInstanceOf[java.util.Map[String,Object]]) {
               override def initialize() {
                 buildImageTasks(project,images)
                 buildScriptTasks(project,scripts)
@@ -142,14 +145,12 @@ class Assets extends org.gradle.api.Plugin[Project] {
         }
       }
 
-      val main = project.task(Map("type"->classOf[AssetsTask]),"assets")
-
       config.getProperty("modules") match {
         case null => ()
         case modules:java.util.Map[String,Object] => {
           for((k,v) <- modules) {
             if(root || imports.contains(k)) {
-              val bundle = new Bundle(factory,k,v.asInstanceOf[java.util.Map[String,Object]]) {
+              val bundle = new Bundle(factory,k,source,v.asInstanceOf[java.util.Map[String,Object]]) {
                 override def initialize() {
                   buildImageTasks(project,images)
                   buildScriptTasks(project,scripts)
@@ -168,7 +169,7 @@ class Assets extends org.gradle.api.Plugin[Project] {
       }
     }
 
-    parse(".",true)
+    parse("src/test/resources",true)
     bundles.foreach(i => i.initialize())
   }
 

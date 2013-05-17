@@ -17,11 +17,11 @@ object Bundle {
   val matcher = new PathMatchingResourcePatternResolver()
 }
 
-abstract class Bundle(val factory:HashMap[String,Bundle],val name:String,val assets:Map[String,Object]) {
+abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val source:String, val assets:Map[String,Object]) {
   import Bundle._
 
   type Node = Map[String,Object]
-  val source = new LinkedList[String]()
+  val includes = new LinkedList[String]()
 
   def initialize()
 

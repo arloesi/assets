@@ -26,8 +26,8 @@ class Assets extends AssertionsForJUnit {
     val project = ProjectBuilder.builder().build()
     project.apply(Map("plugin"->"assets"))
 
-    for(i <- project.getTasks()) {
-      i.asInstanceOf[org.gradle.api.internal.AbstractTask].execute()
+    project.getTasksByName("assets", false) match {
+      case task:AbstractTask => task.execute()
     }
   }
 }

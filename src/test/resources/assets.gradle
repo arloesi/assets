@@ -1,5 +1,4 @@
-include = ["kernel"]
-imports = ["security"]
+include = ["../kernel"]
 
 bundles {
   common {
