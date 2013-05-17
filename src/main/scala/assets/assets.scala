@@ -112,6 +112,7 @@ object Assets {
 
     @TaskAction
     def compile() {
+      // throw new Exception("module")
       val baseDir = getProject().getBuildDir()+"/assets"
       val module = markup.compile(bundle)
       val script = new StringBuilder()
@@ -139,6 +140,8 @@ class Assets extends org.gradle.api.Plugin[Project] {
   import Assets._
 
   def apply(project:Project) {
+    project.getExtensions().create("assets",classOf[Extension])
+
     val factory = new HashMap[String,Bundle]()
     val bundles = new LinkedList[Bundle]()
     val imports = new HashSet[String]()
@@ -265,8 +268,8 @@ class Assets extends org.gradle.api.Plugin[Project] {
     })
 
     task.getInputs().file(sourcePath(bundle.source+"/modules/"+bundle.name+".coffee"))
-    task.getOutputs().file(targetPath(project,"scripts/"+bundle.name+".js"))
-    task.getOutputs().file(targetPath(project,"styles/"+bundle.name+".css"))
+    task.getOutputs().file(targetPath(project,"assets/"+bundle.name+".js"))
+    task.getOutputs().file(targetPath(project,"assets/"+bundle.name+".css"))
     task.getOutputs().file(targetPath(project,"modules/"+bundle.name+".html"))
 
     task

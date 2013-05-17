@@ -11,9 +11,7 @@ object Compiler {
   import Context._
 
   class Coffee(module:Context) {
-    println("begin evaluate")
     module.evaluateFile("assets/coffee.js")
-    println("end evaluate")
 
     def compile(name:String, source:String):String = {
       val coffee = module.get("CoffeeScript")
@@ -63,8 +61,7 @@ object Compiler {
         val file = new File(i.source+"/modules/"+i.name+".coffee").getCanonicalFile()
         println("path: "+file.getAbsolutePath())
 
-        if(file.exists())
-        {
+        if(file.exists()) {
           context.evaluateString(coffee.compile(file.getPath(),FileUtils.readFileToString(file)))
 
           module = context.get("module")

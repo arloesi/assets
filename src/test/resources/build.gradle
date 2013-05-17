@@ -16,6 +16,5 @@ buildscript {
 }
 
 assets {
-  optimize = true
-  target = "assets"
+  optimize true
 }
