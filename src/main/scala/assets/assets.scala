@@ -1,7 +1,7 @@
 package assets
 
 import java.io._
-import java.util.{List,LinkedList,LinkedHashMap,HashMap,HashSet}
+import java.util.{List,LinkedList,LinkedHashMap,HashMap,HashSet,Arrays,Collections}
 import java.security._;
 import scala.collection.JavaConversions._
 import groovy.util.ConfigSlurper
@@ -12,6 +12,12 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.gradle.api.{Project,DefaultTask,Task}
 import org.gradle.api.plugins._
 import org.gradle.api.tasks._
+
+import org.cyberneko.html._
+import org.cyberneko.html.filters._
+import org.apache.xerces.xni.parser.XMLInputSource
+
+import com.google.javascript.jscomp._
 
 object Assets {
   import Compiler._
@@ -57,14 +63,54 @@ object Assets {
     "assets/"+image
   }
 
+  def formatHtml(html:String,optimize:Boolean) = {
+    if(false) {
+      val writer = new java.io.StringWriter()
+      val filter = new org.cyberneko.html.filters.Writer(writer,"UTF-8")
+      val filters = Array(filter)
+      val parser = new HTMLConfiguration();
+      parser.setProperty("http://cyberneko.org/html/properties/filters", filters);
+      val input = new XMLInputSource(null,null,null,new java.io.StringReader(html),null)
+      parser.parse(input)
+      writer.toString()
+    } else {
+      html
+    }
+  }
+
+  def formatJS(script:String,optimize:Boolean):String = {
+    if(optimize) {
+      val externs = Collections.emptyList();
+      val inputs = Arrays.asList(JSSourceFile.fromCode("default.js",script));
+
+      val options = new CompilerOptions();
+      CompilationLevel.SIMPLE_OPTIMIZATIONS.setOptionsForCompilationLevel(options);
+
+      val compiler = new com.google.javascript.jscomp.Compiler();
+      val result = compiler.compile(externs, inputs, options);
+
+      compiler.toSource()
+    } else {
+      script
+    }
+  }
+
+  def formatCSS(css:String,optimize:Boolean):String = {
+    css
+    /*if(false) {
+      val writer = new StringWriter()
+      val compressor = new com.yahoo.platform.yui.compressor.CssCompressor(new StringReader(css))
+      compressor.compress(writer, -1)
+      writer.toString()
+    } else {
+      css
+    }*/
+  }
+
   class Extension {
     private var optimize = false
     def setOptimize(value:Boolean) {this.optimize=value}
     def getOptimize() = {this.optimize}
-
-    private var target = "assets"
-    def setTarget(value:String) {this.target=target}
-    def getTarget() = {this.target}
   }
 
   class AssetsTask extends DefaultTask {
@@ -112,7 +158,8 @@ object Assets {
 
     @TaskAction
     def compile() {
-      // throw new Exception("module")
+      val optimize = getProject().getExtensions().getByType(classOf[Extension]).getOptimize()
+
       val baseDir = getProject().getBuildDir()+"/assets"
       val module = markup.compile(bundle)
       val script = new StringBuilder()
@@ -127,11 +174,13 @@ object Assets {
         new File(targetPath(getProject(),stylePath(i._2))))))
 
       val scriptName = md5(script.toString()).toString()
-      FileUtils.writeStringToFile(new File(baseDir+"/"+bundle.name+".js"), script.toString())
+      FileUtils.writeStringToFile(new File(baseDir+"/"+bundle.name+".js"), formatJS(script.toString(),optimize))
 
       val styleName = md5(style.toString()).toString()
       FileUtils.writeStringToFile(new File(baseDir+"/"+bundle.name+".css"), style.toString())
-      FileUtils.writeStringToFile(new File(getProject().getBuildDir()+"/modules/"+bundle.name+".html"), module.master(bundle,scriptName,styleName))
+
+      val html = module.master(bundle,scriptName,styleName)
+      FileUtils.writeStringToFile(new File(getProject().getBuildDir()+"/modules/"+bundle.name+".html"),html)
     }
   }
 }
