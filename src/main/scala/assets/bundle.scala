@@ -45,11 +45,12 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
   lazy val images = {
     val list = new LinkedList[(String,String)]()
 
-    for((k,images) <- assets) {
+    for((k,v) <- assets) {
       k match {
         case "scripts" => ()
         case "styles" => ()
         case "modules" => ()
+        case "include" => ()
         case name:String => {
           def parse(target:String,source:Object) {
             source match {
@@ -68,7 +69,7 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
                   } else if(file.isDirectory()) {
                     val path = file.getCanonicalPath()
 
-                    for(r <- matcher.getResources("file:"+file.getCanonicalPath()+"/**/*.png")) {
+                    for(r <- matcher.getResources("file:"+file.getCanonicalPath()+"/**/*.*")) {
                       val relative = r.getFile().getCanonicalPath().substring(path.length())
                       list.add((r.getFile().getCanonicalPath(),target+"/"+relative))
                     }
@@ -80,7 +81,7 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
             }
           }
 
-          parse(name,images)
+          parse(name,v)
         }
       }
     }

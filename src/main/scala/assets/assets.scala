@@ -126,11 +126,11 @@ object Assets {
         new File(targetPath(getProject(),stylePath(i._2))))))
 
       val scriptName = md5(script.toString()).toString()
-      FileUtils.writeStringToFile(new File(baseDir+"/scripts/"+bundle.name+".js"), script.toString())
+      FileUtils.writeStringToFile(new File(baseDir+"/"+bundle.name+".js"), script.toString())
 
       val styleName = md5(style.toString()).toString()
-      FileUtils.writeStringToFile(new File(baseDir+"/styles/"+bundle.name+".css"), style.toString())
-      FileUtils.writeStringToFile(new File(baseDir+"/modules/"+bundle.name+".html"), module.master(bundle,scriptName,styleName))
+      FileUtils.writeStringToFile(new File(baseDir+"/"+bundle.name+".css"), style.toString())
+      FileUtils.writeStringToFile(new File(getProject().getBuildDir()+"/modules/"+bundle.name+".html"), module.master(bundle,scriptName,styleName))
     }
   }
 }
@@ -273,7 +273,6 @@ class Assets extends org.gradle.api.Plugin[Project] {
   }
 
   def buildFileTask(project:Project,`type`:Class[_],source:String,target:String) = {
-    println("target: "+targetPath(project,target))
     val task = project.task(Map("type"->`type`),targetPath(project,target))
     task.getInputs().file(new File(source).getCanonicalPath())
     task.getOutputs().file(targetPath(project,target))
