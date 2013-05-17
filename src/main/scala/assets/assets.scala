@@ -2,6 +2,7 @@ package assets
 
 import java.io._
 import java.util.{List,LinkedList,LinkedHashMap,HashMap,HashSet}
+import java.security._;
 import scala.collection.JavaConversions._
 import groovy.util.ConfigSlurper
 
@@ -22,12 +23,33 @@ object Assets {
   val less = new Less()
   val markup = new Markup(context,coffee)
 
+  def md5(source:String) = {
+      val md = MessageDigest.getInstance("MD5");
+      val mdbytes = source.getBytes()
+
+      //convert the byte to hex format method 1
+      val sb = new StringBuffer();
+      for (i <- 0 until mdbytes.length) {
+        sb.append(Integer.toString((mdbytes(i) & 0xff) + 0x100, 16).substring(1));
+      }
+
+      sb.toString()
+  }
+
+  def sourcePath(source:String) = {
+    new File(source).getCanonicalPath()
+  }
+
+  def targetPath(project:Project,target:String) = {
+    new File(project.getBuildDir().getPath()+"/"+target).getCanonicalPath()
+  }
+
   def scriptPath(script:String) = {
-    TEMP+"/scripts/"+FilenameUtils.getName(script)+".js"
+    TEMP+"/scripts/"+FilenameUtils.getPathNoEndSeparator(script)+"/"+FilenameUtils.getBaseName(script)+".js"
   }
 
   def stylePath(script:String) = {
-    TEMP+"/styles/"+FilenameUtils.getName(script)+".css"
+    TEMP+"/styles/"+FilenameUtils.getPathNoEndSeparator(script)+"/"+FilenameUtils.getBaseName(script)+".css"
   }
 
   def imagePath(image:String) = {
@@ -58,7 +80,7 @@ object Assets {
     def compile()
 
     def load() = {
-      IOUtils.toString(getClass().getClassLoader().getResourceAsStream(source.getPath()))
+      FileUtils.readFileToString(source)
     }
 
     def save(source:String) {
@@ -94,18 +116,18 @@ object Assets {
       val script = new StringBuilder()
 
       bundle.scripts_r(i => script.append(FileUtils.readFileToString(
-        new File(getProject().getBuildDir()+"/"+scriptPath(i)))))
+        new File(targetPath(getProject(),scriptPath(i))))))
 
       module.inlines.foreach(script.append _)
 
       val style = new StringBuilder()
       bundle.styles_r(i => style.append(FileUtils.readFileToString(
-        new File(getProject().getBuildDir()+"/"+stylePath(i)))))
+        new File(targetPath(getProject(),stylePath(i))))))
 
-      val scriptName = DigestUtils.md5(script.toString()).toString()
+      val scriptName = md5(script.toString()).toString()
       FileUtils.writeStringToFile(new File(baseDir+"/scripts/"+bundle.name+".js"), script.toString())
 
-      val styleName = DigestUtils.md5(style.toString()).toString()
+      val styleName = md5(style.toString()).toString()
       FileUtils.writeStringToFile(new File(baseDir+"/styles/"+bundle.name+".css"), style.toString())
       FileUtils.writeStringToFile(new File(baseDir+"/modules/"+bundle.name+".html"), module.master(bundle,scriptName,styleName))
     }
@@ -229,17 +251,31 @@ class Assets extends org.gradle.api.Plugin[Project] {
     val task = project.task(Map("type"->classOf[ModuleTask]),bundle.name).asInstanceOf[ModuleTask]
     task.bundle = bundle
 
-    bundle.bundles_r(x => if(x != bundle) task.getInputs().file(project.getBuildDir()+"/"+scriptPath(x.name+".js")))
-    bundle.scripts_r(x => task.getInputs().file(project.getBuildDir()+"/"+scriptPath(x)))
-    bundle.styles_r(x => task.getOutputs().file(project.getBuildDir()+"/"+stylePath(x)))
+    bundle.scripts_r(x => {
+      val path = targetPath(project,scriptPath(x))
+      task.dependsOn(path)
+      task.getInputs().file(path)
+    })
+
+    bundle.styles_r(x => {
+      val path = targetPath(project,stylePath(x))
+      task.dependsOn(path)
+      task.getInputs().file(path)
+    })
+
+    task.getInputs().file(sourcePath(bundle.source+"/modules/"+bundle.name+".coffee"))
+    task.getOutputs().file(targetPath(project,"scripts/"+bundle.name+".js"))
+    task.getOutputs().file(targetPath(project,"styles/"+bundle.name+".css"))
+    task.getOutputs().file(targetPath(project,"modules/"+bundle.name+".html"))
 
     task
   }
 
   def buildFileTask(project:Project,`type`:Class[_],source:String,target:String) = {
-    val task = project.task(Map("type"->`type`),target)
-    task.getInputs().file(source)
-    task.getOutputs().file(project.getBuildDir().getPath()+"/"+target)
+    println("target: "+targetPath(project,target))
+    val task = project.task(Map("type"->`type`),targetPath(project,target))
+    task.getInputs().file(new File(source).getCanonicalPath())
+    task.getOutputs().file(targetPath(project,target))
     task
   }
 

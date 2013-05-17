@@ -10,7 +10,7 @@ menu =
       div "item", "My Item"
 
 this.module =
-  include: ["kernel"]
-  inlines: [menu.script]
-  templates:
+  inline: [menu.script]
+
+  markup:
     menu: menu.template

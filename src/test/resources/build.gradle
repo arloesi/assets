@@ -6,12 +6,12 @@ buildscript {
     mavenCentral()
 
     maven {
-      url "https://github.com/arloesi/maven/raw/master"
+      url "file://Users/david/Workspaces/Vertex/maven"
     }
   }
 
   dependencies {
-    classpath group:"arloesi",name:"assets",version:"1.0"
+    classpath group:"arloesi",name:"assets",version:"0.1"
   }
 }
 

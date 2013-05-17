@@ -1,9 +1,9 @@
-include = ["../kernel"]
+// include = ["../kernel"]
 
 bundles {
   common {
-    styles = ["common","layout"]
-    scripts= ["common","utility"]
+    styles = ["common","assets/styles/layout.less"]
+    scripts= ["common","assets/scripts/utility.coffee"]
 
     images {
       styles {
@@ -15,13 +15,12 @@ bundles {
 
 modules {
   home {
-    include = ["common"]
-    scripts = ["home"]
-    styles = ["home"]
+    scripts = ["assets/scripts/home.coffee"]
+    styles = ["assets/styles/home.less"]
   }
 
-  login {
-    scripts = ["login"]
-    styles = ["login"]
-  }
+  /*login {
+    scripts = ["assets/scripts/login.coffee"]
+    styles = ["assets/styles/login.less"]
+  }*/
 }
