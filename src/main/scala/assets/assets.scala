@@ -62,7 +62,7 @@ object Assets {
     }
 
     def save(source:String) {
-      FileUtils.write(target,source)
+      FileUtils.writeStringToFile(target, source)
     }
   }
 
@@ -103,11 +103,11 @@ object Assets {
         new File(getProject().getBuildDir()+"/"+stylePath(i)))))
 
       val scriptName = DigestUtils.md5(script.toString()).toString()
-      FileUtils.write(new File(baseDir+"/scripts/"+bundle.name+".js"), script.toString())
+      FileUtils.writeStringToFile(new File(baseDir+"/scripts/"+bundle.name+".js"), script.toString())
 
       val styleName = DigestUtils.md5(style.toString()).toString()
-      FileUtils.write(new File(baseDir+"/styles/"+bundle.name+".css"), style.toString())
-      FileUtils.write(new File(baseDir+"/modules/"+bundle.name+".html"), module.master(bundle,scriptName,styleName))
+      FileUtils.writeStringToFile(new File(baseDir+"/styles/"+bundle.name+".css"), style.toString())
+      FileUtils.writeStringToFile(new File(baseDir+"/modules/"+bundle.name+".html"), module.master(bundle,scriptName,styleName))
     }
   }
 }
@@ -176,7 +176,7 @@ class Assets extends org.gradle.api.Plugin[Project] {
       }
     }
 
-    parse("src/test/resources",true)
+    parse(".",true)
     bundles.foreach(i => i.initialize())
   }
 

@@ -8,7 +8,7 @@ import assets._
 class Compile extends AssertionsForJUnit {
   type Context = assets.Context
 
-  @Test
+  /*@Test
   def module() {
     val module = new Context()
     module.evaluateString("this.count=4")
@@ -17,7 +17,7 @@ class Compile extends AssertionsForJUnit {
     Assert.assertEquals(4.0,count,0.0)
   }
 
-  /*@Test
+  @Test
   def coffee() {
     val coffee = new Coffee(new Context())
     val script = coffee.compile("<inline>","x=4\nthis.y=5")

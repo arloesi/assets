@@ -16,7 +16,7 @@ import assets._
 class Assets extends AssertionsForJUnit {
   import assets.Assets._
 
-  @Test
+  /*@Test
   def apply() {
     val project = ProjectBuilder.builder().build()
     project.apply(Map("plugin"->"assets"))
@@ -34,9 +34,5 @@ class Assets extends AssertionsForJUnit {
         case task:AbstractTask => task.execute()
       }
     }
-
-    /*project.getTasks().getByName("assets") match {
-      case task:AbstractTask => task.execute()
-    }*/
-  }
+  }*/
 }
