@@ -14,6 +14,8 @@ import org.gradle.api.internal.AbstractTask
 import assets._
 
 class Assets extends AssertionsForJUnit {
+  import assets.Assets._
+
   @Test
   def apply() {
     val project = ProjectBuilder.builder().build()
@@ -26,8 +28,15 @@ class Assets extends AssertionsForJUnit {
     val project = ProjectBuilder.builder().build()
     project.apply(Map("plugin"->"assets"))
 
-    project.getTasksByName("assets", false) match {
-      case task:AbstractTask => task.execute()
+    for(i <- project.getTasks()) {
+      i match {
+        case task:AssetsTask => ()
+        case task:AbstractTask => task.execute()
+      }
     }
+
+    /*project.getTasks().getByName("assets") match {
+      case task:AbstractTask => task.execute()
+    }*/
   }
 }

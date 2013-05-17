@@ -15,17 +15,23 @@ import org.gradle.api.tasks._
 object Assets {
   import Compiler._
 
+  final val TEMP = "assets-temp/"
+
   val context = new Context()
   val coffee = new Coffee(context)
   val less = new Less()
   val markup = new Markup(context,coffee)
 
-  def scriptPath(project:Project,script:String) = {
-    "scripts/"+FilenameUtils.getName(script)+".js"
+  def scriptPath(script:String) = {
+    TEMP+"/scripts/"+FilenameUtils.getName(script)+".js"
   }
 
-  def stylePath(project:Project,script:String) = {
-    "styles/"+FilenameUtils.getName(script)+".css"
+  def stylePath(script:String) = {
+    TEMP+"/styles/"+FilenameUtils.getName(script)+".css"
+  }
+
+  def imagePath(image:String) = {
+    "assets/images/"+image
   }
 
   class Extension {
@@ -41,8 +47,6 @@ object Assets {
   class AssetsTask extends DefaultTask {
     @TaskAction
     def compile() {
-      val extension = getProject().getExtensions().getByName("assets").asInstanceOf[Extension]
-      println("optimize: "+extension.getOptimize())
     }
   }
 
@@ -85,22 +89,25 @@ object Assets {
 
     @TaskAction
     def compile() {
-      val module = markup.compile(bundle.name, bundle.includes)
-
+      val baseDir = getProject().getBuildDir()+"/assets"
+      val module = markup.compile(bundle)
       val script = new StringBuilder()
-      bundle.scripts_r(i => script.append(FileUtils.readFileToString(new File(i))))
+
+      bundle.scripts_r(i => script.append(FileUtils.readFileToString(
+        new File(getProject().getBuildDir()+"/"+scriptPath(i)))))
+
       module.inlines.foreach(script.append _)
 
       val style = new StringBuilder()
-      bundle.styles_r(i => style.append(FileUtils.readFileToString(new File(i))))
+      bundle.styles_r(i => style.append(FileUtils.readFileToString(
+        new File(getProject().getBuildDir()+"/"+stylePath(i)))))
 
       val scriptName = DigestUtils.md5(script.toString()).toString()
-      FileUtils.write(new File(scriptName), script.toString())
+      FileUtils.write(new File(baseDir+"/scripts/"+bundle.name+".js"), script.toString())
 
       val styleName = DigestUtils.md5(style.toString()).toString()
-      FileUtils.write(new File(styleName), style.toString())
-
-      FileUtils.write(new File(bundle.name+".html"), module.master(scriptName,styleName))
+      FileUtils.write(new File(baseDir+"/styles/"+bundle.name+".css"), style.toString())
+      FileUtils.write(new File(baseDir+"/modules/"+bundle.name+".html"), module.master(bundle,scriptName,styleName))
     }
   }
 }
@@ -177,7 +184,7 @@ class Assets extends org.gradle.api.Plugin[Project] {
     val tasks = new LinkedList[Task]()
 
     for((s,t) <- images) {
-      val task = buildCopyTask(project,s,t)
+      val task = buildCopyTask(project,s,imagePath(t))
       tasks.add(task)
     }
 
@@ -188,7 +195,7 @@ class Assets extends org.gradle.api.Plugin[Project] {
     val tasks = new LinkedList[Task]()
 
     for(source <- scripts) {
-      val target = FilenameUtils.getName(source)+".js"
+      val target = scriptPath(source)
       val ext = FilenameUtils.getExtension(source)
 
       if(ext == "js") {
@@ -205,7 +212,7 @@ class Assets extends org.gradle.api.Plugin[Project] {
     val tasks = new LinkedList[Task]()
 
     for(source <- styles) {
-      val target = FilenameUtils.getName(source)+".css"
+      val target = stylePath(source)
       val ext = FilenameUtils.getExtension(source)
 
       if(ext == "css") {
@@ -218,10 +225,21 @@ class Assets extends org.gradle.api.Plugin[Project] {
     tasks
   }
 
+  def buildModuleTask(project:Project,bundle:Bundle) {
+    val task = project.task(Map("type"->classOf[ModuleTask]),bundle.name).asInstanceOf[ModuleTask]
+    task.bundle = bundle
+
+    bundle.bundles_r(x => if(x != bundle) task.getInputs().file(project.getBuildDir()+"/"+scriptPath(x.name+".js")))
+    bundle.scripts_r(x => task.getInputs().file(project.getBuildDir()+"/"+scriptPath(x)))
+    bundle.styles_r(x => task.getOutputs().file(project.getBuildDir()+"/"+stylePath(x)))
+
+    task
+  }
+
   def buildFileTask(project:Project,`type`:Class[_],source:String,target:String) = {
     val task = project.task(Map("type"->`type`),target)
     task.getInputs().file(source)
-    task.getOutputs().file(target)
+    task.getOutputs().file(project.getBuildDir().getPath()+"/"+target)
     task
   }
 
@@ -235,15 +253,5 @@ class Assets extends org.gradle.api.Plugin[Project] {
 
   def buildLessTask(project:Project,source:String,target:String) = {
     buildFileTask(project,classOf[LessTask],source,target)
-  }
-
-  def buildModuleTask(project:Project,bundle:Bundle) {
-    val task = project.task(Map("type"->classOf[ModuleTask]),bundle.name).asInstanceOf[ModuleTask]
-    task.bundle = bundle
-
-    bundle.scripts_r(x => task.dependsOn(scriptPath(project,x)))
-    bundle.styles_r(x => task.dependsOn(stylePath(project,x)))
-
-    task
   }
 }

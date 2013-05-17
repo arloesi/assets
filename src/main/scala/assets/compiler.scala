@@ -38,8 +38,8 @@ object Compiler {
       val markup = new LinkedList[String];
       var source:Scriptable = null
 
-      def master(script:String,style:String) = {
-        withContext(ctx => render.call(ctx,context.scope,source,Array(script,style,markup)).toString())
+      def master(bundle:Bundle,script:String,style:String) = {
+        withContext(ctx => render.call(ctx,context.scope,source,Array(bundle.name,script,style,markup)).toString())
       }
     }
 
@@ -47,13 +47,13 @@ object Compiler {
     val unwrap:Function = context.get("__unwrapModule")
     val render:Function = context.get("__renderModule")
 
-    def compile(name:String,source:List[String]):Module = {
+    def compile(bundle:Bundle):Module = {
       val context = new Context(this.context)
       val result = new Module()
 
       var module:Scriptable = null
 
-      for(i <- source) {
+      for(i <- bundle.includes) {
         context.evaluateString(i)
 
         module = context.get("module")

@@ -278,14 +278,14 @@ this.__unwrapModule = (module) ->
   markup: unwrapList module.markup
   master: module.master
 
-this.__renderModule = (js,css,templates) ->
+this.__renderModule = (name,js,css,templates) ->
   markup.render ->
     html ->
       head ->
         runtime()
 
-        link type:"text/css",rel:"stylesheet",href:css
-        script type:"tet/javascript",src:js
+        link type:"text/css",rel:"stylesheet",href:"/assets/scripts/#{name}.css?version=#{css}"
+        script type:"tet/javascript",src:"/assets/styles/#{name}.js?version=#{js}"
 
         module.master.head()
 

@@ -21,20 +21,25 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
   import Bundle._
 
   type Node = Map[String,Object]
-  val includes = new LinkedList[String]()
+
+  lazy val includes = {
+    val list = new LinkedList[String]()
+    parse_r(x => list.add(x.source+"/modules/"+x.name+".coffee"))
+    list
+  }
 
   def initialize()
 
   lazy val scripts =
     assets.get("styles") match {
       case null => new LinkedList[String]()
-      case list:List[String] => list
+      case list:List[String] => list.map(i => source+"/"+i):List[String]
     }
 
   lazy val styles =
     assets.get("styles") match {
       case null => new LinkedList[String]()
-      case list:List[String] => list
+      case list:List[String] => list.map(i => source+"/"+i):List[String]
     }
 
   lazy val images =
@@ -52,13 +57,16 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
             }
             case l:List[String] => {
               for(i <- l) {
-                val f = new File(i)
+                val f = new File(this.source+"/"+i)
 
                 if(f.isFile()) {
                   list.add((i,target+"/"+i))
                 } else if(f.isDirectory()) {
+                  val path = new File(this.source).getCanonicalPath()
+
                   for(r <- matcher.getResources(i+"/**/*.png")) {
-                    list.add((r.getFile().getPath(),target+"/"+r.getFile().getPath()))
+                    val relative = r.getFile().getCanonicalPath().substring(path.length())
+                    list.add((relative,target+"/"+relative))
                   }
                 } else {
                   throw new FileNotFoundException(f.getPath())
@@ -68,7 +76,7 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
           }
         }
 
-        parse("",images)
+        parse(".",images)
 
         list
       }
@@ -76,8 +84,12 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
 
   def parse_r(f:Bundle=>Unit) {
     def parse(bundle:Bundle) {
-      for(i <- bundle.assets.get("includes").asInstanceOf[List[String]]) {
-        parse(factory.get(i))
+      bundle.assets.get("includes") match {
+        case list:List[String] =>
+          for(i <- bundle.assets.get("includes").asInstanceOf[List[String]]) {
+            parse(factory.get(i))
+          }
+        case _ => ()
       }
 
       f(bundle)
