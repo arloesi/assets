@@ -1,4 +1,4 @@
-// include = ["../../../../kernel"]
+include = ["../../../../kernel"]
 
 bundles {
   common {
@@ -10,7 +10,7 @@ bundles {
 
 modules {
   home {
-    include = ["common"]
+    include = ["kernel","common"]
     scripts = ["assets/scripts/home.coffee"]
     styles = ["assets/styles/home.less"]
   }

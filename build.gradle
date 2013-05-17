@@ -10,6 +10,7 @@ ext {
   junitVersion = "4.11"
   springVersion = "3.2.2.RELEASE"
   nekoVersion = "1.9.17"
+  closureVersion = "v20130411"
 }
 
 repositories {
@@ -27,6 +28,7 @@ dependencies {
   // compile group:"commons-codec",name:"commons-codec",version:"1.8"
   compile group:"org.springframework", name:"spring-core", version:ext.springVersion
   compile group:"net.sourceforge.nekohtml", name:"nekohtml", version:ext.nekoVersion
+  compile group:"com.google.javascript",name:"closure-compiler",version:ext.closureVersion
 
   testCompile group:"junit",name:"junit",version:ext.junitVersion
   testCompile group:"org.scalatest",name:"scalatest_$scalaVersion",version:ext.testVersion

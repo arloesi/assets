@@ -117,7 +117,7 @@ object Assets {
       val script = new StringBuilder()
 
       bundle.scripts_r(i => script.append(FileUtils.readFileToString(
-        new File(targetPath(getProject(),scriptPath(i))))))
+        new File(targetPath(getProject(),scriptPath(i._2))))))
 
       module.inlines.foreach(script.append _)
 
@@ -214,11 +214,11 @@ class Assets extends org.gradle.api.Plugin[Project] {
     tasks
   }
 
-  def buildScriptTasks(project:Project,scripts:List[String]) = {
+  def buildScriptTasks(project:Project,scripts:List[(String,String)]) = {
     val tasks = new LinkedList[Task]()
 
-    for(source <- scripts) {
-      val target = scriptPath(source)
+    for((source,targ) <- scripts) {
+      val target = scriptPath(targ)
       val ext = FilenameUtils.getExtension(source)
 
       if(ext == "js") {
@@ -253,7 +253,7 @@ class Assets extends org.gradle.api.Plugin[Project] {
     task.bundle = bundle
 
     bundle.scripts_r(x => {
-      val path = targetPath(project,scriptPath(x))
+      val path = targetPath(project,scriptPath(x._2))
       task.dependsOn(path)
       task.getInputs().file(path)
     })

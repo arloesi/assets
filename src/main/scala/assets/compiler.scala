@@ -60,10 +60,10 @@ object Compiler {
       var module:Scriptable = null
 
       bundle.bundles_r(i => {
-        val file = new File(i.source+"/modules/"+i.name+".coffee")
+        val file = new File(i.source+"/modules/"+i.name+".coffee").getCanonicalFile()
         println("path: "+file.getAbsolutePath())
 
-        // if(file.exists())
+        if(file.exists())
         {
           context.evaluateString(coffee.compile(file.getPath(),FileUtils.readFileToString(file)))
 

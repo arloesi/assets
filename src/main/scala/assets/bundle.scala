@@ -32,8 +32,8 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
 
   lazy val scripts =
     assets.get("scripts") match {
-      case null => new LinkedList[String]()
-      case list:List[String] => list.map(i => source+"/"+i):List[String]
+      case null => new LinkedList[(String,String)]()
+      case list:List[String] => list.map(i => (source+"/"+i,this.name+"/"+i)):List[(String,String)]
     }
 
   lazy val styles =
@@ -103,7 +103,7 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
     parse_r(f)
   }
 
-  def scripts_r(f:String=>Unit) {
+  def scripts_r(f:((String,String))=>Unit) {
     parse_r(x => x.scripts.foreach(f))
   }
 
