@@ -64,38 +64,34 @@ object Assets {
     "assets/"+image
   }
 
-  def compress(file:File,source:String,optimize:Boolean) {
-    val stream = new GZIPOutputStream(new FileOutputStream(file),
-      if(optimize) {
-        Deflater.BEST_COMPRESSION
-      } else {
-        Deflater.NO_COMPRESSION
-      })
+  def compression(optimize:Boolean) = {
+    if(optimize) {
+      Deflater.BEST_COMPRESSION
+    } else {
+      Deflater.BEST_SPEED
+    }
+  }
 
+  def compress(file:File,source:String,optimize:Boolean) {
+    val stream = new GZIPOutputStream(new FileOutputStream(file),compression(optimize))
     IOUtils.write(source,stream)
     stream.close()
   }
 
   def compress(file:File,source:File,optimize:Boolean) {
-    val stream = new GZIPOutputStream(new FileOutputStream(file),
-      if(optimize) {
-        Deflater.BEST_COMPRESSION
-      } else {
-        Deflater.NO_COMPRESSION
-      })
-
+    val stream = new GZIPOutputStream(new FileOutputStream(file),compression(optimize))
     IOUtils.copy(new FileInputStream(source), stream)
     stream.close()
   }
 
   def formatHtml(html:String,optimize:Boolean) = {
-    if(optimize) {
+    if(false) {
       val writer = new java.io.StringWriter()
       val filter = new org.cyberneko.html.filters.Writer(writer,"UTF-8")
       val purifier = new org.cyberneko.html.filters.Purifier()
       val filters = Array(purifier,filter)
       val parser = new HTMLConfiguration();
-      parser.setProperty("http://cyberneko.org/html/properties/filters", filters);
+      parser.setProperty("http://cyberneko.org/html/properties/filters",filters);
       val input = new XMLInputSource(null,null,null,new java.io.StringReader(html),null)
       parser.parse(input)
       writer.toString()
@@ -160,9 +156,16 @@ object Assets {
   }
 
   class CopyTask extends FileTask {
+    var compress:Boolean = true
+
     override def compile() {
       FileUtils.copyFile(source, target)
-      compress(new File(target.getPath()+".gz"),source,getProject().getExtensions().getByType(classOf[Extension]).getOptimize())
+
+      if(compress) {
+        Assets.compress(
+          new File(target.getPath()+".gz"),source,
+          getProject().getExtensions().getByType(classOf[Extension]).getOptimize())
+      }
     }
   }
 
@@ -293,7 +296,7 @@ class Assets extends org.gradle.api.Plugin[Project] {
     val tasks = new LinkedList[Task]()
 
     for((s,t) <- images) {
-      val task = buildCopyTask(project,sourcePath(s),imagePath(t))
+      val task = buildCopyTask(project,sourcePath(s),imagePath(t),false)
       tasks.add(task)
     }
 
@@ -350,7 +353,7 @@ class Assets extends org.gradle.api.Plugin[Project] {
       task.getInputs().file(path)
     })
 
-    task.getInputs().file(sourcePath(bundle.source+"/modules/"+bundle.name+".coffee"))
+    bundle.modules.foreach(task.getInputs().file _)
 
     val script = targetPath(project,"assets/"+bundle.name+".js")
     task.getOutputs().file(script)
@@ -367,18 +370,24 @@ class Assets extends org.gradle.api.Plugin[Project] {
     task
   }
 
-  def buildFileTask(project:Project,`type`:Class[_],source:String,target:String) = {
+  def buildFileTask[T](project:Project,`type`:Class[T],source:String,target:String,compress:Boolean=true) = {
     val task = project.task(Map("type"->`type`),targetPath(project,target))
     val input = new File(source).getCanonicalPath()
     val output = targetPath(project,target)
     task.getInputs().file(input)
     task.getOutputs().file(output)
-    task.getOutputs().file(output+".gz")
-    task
+
+    if(compress) {
+      task.getOutputs().file(output+".gz")
+    }
+
+    task.asInstanceOf[T]
   }
 
-  def buildCopyTask(project:Project,source:String,target:String) = {
-    buildFileTask(project,classOf[CopyTask],source,target)
+  def buildCopyTask(project:Project,source:String,target:String,compress:Boolean=true) = {
+    val task = buildFileTask(project,classOf[CopyTask],source,target,compress)
+    task.compress = compress
+    task
   }
 
   def buildCoffeeTask(project:Project,source:String,target:String) = {

@@ -22,13 +22,31 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
 
   type Node = Map[String,Object]
 
-  lazy val includes = {
+  def initialize()
+
+  lazy val modules = {
     val list = new LinkedList[String]()
-    parse_r(x => list.add(x.source+"/modules/"+x.name+".coffee"))
+    parse_r(x => {
+      def path(name:String) = {x.source+"/modules/"+name+".coffee"}
+
+      x.assets.get("modules") match {
+        case null => {
+          val file = new File(path(x.name)).getCanonicalFile()
+
+          if(file.exists()) {
+            list.add(file.getPath())
+          }
+        }
+        case modules:List[String] => {
+          for(i <- modules) {
+            list.add(new File(path(i)).getCanonicalPath())
+          }
+        }
+      }
+
+    })
     list
   }
-
-  def initialize()
 
   lazy val scripts =
     assets.get("scripts") match {

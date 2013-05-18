@@ -63,20 +63,16 @@ object Compiler {
 
       var module:Scriptable = null
 
-      bundle.bundles_r(i => {
-        val file = new File(i.source+"/modules/"+i.name+".coffee").getCanonicalFile()
-        println("path: "+file.getAbsolutePath())
+      for(i <- bundle.modules) {
+        val file = new File(i).getCanonicalFile()
+        context.evaluateString(coffee.compile(file.getPath(),FileUtils.readFileToString(file)))
 
-        if(file.exists()) {
-          context.evaluateString(coffee.compile(file.getPath(),FileUtils.readFileToString(file)))
+        module = context.get("module")
+        val unwrapped = withContext(ctx => unwrap.call(ctx,context.scope,module,Array(module)).asInstanceOf[Scriptable])
 
-          module = context.get("module")
-          val unwrapped = withContext(ctx => unwrap.call(ctx,context.scope,module,Array(module)).asInstanceOf[Scriptable])
-
-          result.inlines.addAll(Context.toType(unwrapped.get("inline",unwrapped),classOf[List[String]]))
-          result.markup.add(unwrapped.get("markup",unwrapped).asInstanceOf[Scriptable])
-        }
-      })
+        result.inlines.addAll(Context.toType(unwrapped.get("inline",unwrapped),classOf[List[String]]))
+        result.markup.add(unwrapped.get("markup",unwrapped).asInstanceOf[Scriptable])
+      }
 
       result.source = module
 
