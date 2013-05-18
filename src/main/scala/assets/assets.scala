@@ -76,6 +76,18 @@ object Assets {
     stream.close()
   }
 
+  def compress(file:File,source:File,optimize:Boolean) {
+    val stream = new GZIPOutputStream(new FileOutputStream(file),
+      if(optimize) {
+        Deflater.BEST_COMPRESSION
+      } else {
+        Deflater.NO_COMPRESSION
+      })
+
+    IOUtils.copy(new FileInputStream(source), stream)
+    stream.close()
+  }
+
   def formatHtml(html:String,optimize:Boolean) = {
     if(optimize) {
       val writer = new java.io.StringWriter()
@@ -150,6 +162,7 @@ object Assets {
   class CopyTask extends FileTask {
     override def compile() {
       FileUtils.copyFile(source, target)
+      compress(new File(target.getPath()+".gz"),source,getProject().getExtensions().getByType(classOf[Extension]).getOptimize())
     }
   }
 

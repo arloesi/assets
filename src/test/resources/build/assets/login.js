@@ -1,0 +1,1 @@
+(function(){}).call(this);(function(){this.utility=function(a){return console.log("utility: "+a)}}).call(this);(function(){}).call(this);(function(){return this.Menu=function(){return function(a){this.items=[{title:"Home",target:"home"},{title:"Content",target:"content"}]}}()}).call(this);
