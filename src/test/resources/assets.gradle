@@ -2,7 +2,7 @@ include = ["../../../../kernel"]
 
 bundles {
   common {
-    modules= ["common","utility"]
+    modules= ["common"]
     styles = ["assets/styles/common.less","assets/styles/layout.less"]
     scripts= ["assets/scripts/common.coffee","assets/scripts/utility.coffee"]
     images = ["assets/images"]

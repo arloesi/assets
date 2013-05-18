@@ -294,6 +294,5 @@ this.__renderModule = (name,js,css,templates) ->
       body ->
         module.master.body()
         foreach templates, (i) ->
-          for k,v of i
-            script "##{k}",type:"text/html", v
+          script "##{k}-template",type:"text/html", v for k,v of i
 
