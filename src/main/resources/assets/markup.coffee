@@ -286,8 +286,8 @@ this.__renderModule = (name,js,css,templates) ->
       head ->
         runtime()
 
-        link type:"text/css",rel:"stylesheet",href:"/assets/styles/#{name}.css?version=#{css}"
-        script type:"tet/javascript",src:"/assets/scripts/#{name}.js?version=#{js}"
+        link type:"text/css",rel:"stylesheet",href:"/assets/#{name}.css?version=#{css}"
+        script type:"tet/javascript",src:"/assets/#{name}.js?version=#{js}"
 
         module.master.head()
 

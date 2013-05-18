@@ -26,9 +26,15 @@ object Compiler {
 
   class Less {
     val less = new LessCompiler()
+    val comp = new LessCompiler()
+    comp.setCompress(true)
 
     def compile(name:String,source:String):String = {
       less.compile(source)
+    }
+
+    def compress(source:String):String = {
+      comp.compile(source)
     }
   }
 

@@ -2,6 +2,7 @@ package assets
 
 import java.io._
 import java.util.{List,LinkedList,LinkedHashMap,HashMap,HashSet,Arrays,Collections}
+import java.util.zip._
 import java.security._;
 import scala.collection.JavaConversions._
 import groovy.util.ConfigSlurper
@@ -63,11 +64,24 @@ object Assets {
     "assets/"+image
   }
 
+  def compress(file:File,source:String,optimize:Boolean) {
+    val stream = new GZIPOutputStream(new FileOutputStream(file),
+      if(optimize) {
+        Deflater.BEST_COMPRESSION
+      } else {
+        Deflater.NO_COMPRESSION
+      })
+
+    IOUtils.write(source,stream)
+    stream.close()
+  }
+
   def formatHtml(html:String,optimize:Boolean) = {
-    if(false) {
+    if(optimize) {
       val writer = new java.io.StringWriter()
       val filter = new org.cyberneko.html.filters.Writer(writer,"UTF-8")
-      val filters = Array(filter)
+      val purifier = new org.cyberneko.html.filters.Purifier()
+      val filters = Array(purifier,filter)
       val parser = new HTMLConfiguration();
       parser.setProperty("http://cyberneko.org/html/properties/filters", filters);
       val input = new XMLInputSource(null,null,null,new java.io.StringReader(html),null)
@@ -96,15 +110,11 @@ object Assets {
   }
 
   def formatCSS(css:String,optimize:Boolean):String = {
-    css
-    /*if(false) {
-      val writer = new StringWriter()
-      val compressor = new com.yahoo.platform.yui.compressor.CssCompressor(new StringReader(css))
-      compressor.compress(writer, -1)
-      writer.toString()
+    if(optimize) {
+      less.compress(css)
     } else {
       css
-    }*/
+    }
   }
 
   class Extension {
@@ -131,7 +141,9 @@ object Assets {
     }
 
     def save(source:String) {
+      val optimize = getProject().getExtensions().getByType(classOf[Extension]).getOptimize()
       FileUtils.writeStringToFile(target, source)
+      compress(new File(target.getPath()+".gz"),source,optimize)
     }
   }
 
@@ -173,14 +185,23 @@ object Assets {
       bundle.styles_r(i => style.append(FileUtils.readFileToString(
         new File(targetPath(getProject(),stylePath(i._2))))))
 
-      val scriptName = md5(script.toString()).toString()
-      FileUtils.writeStringToFile(new File(baseDir+"/"+bundle.name+".js"), formatJS(script.toString(),optimize))
+      val js = formatJS(script.toString(),optimize)
+      val css = formatCSS(style.toString(),optimize)
 
-      val styleName = md5(style.toString()).toString()
-      FileUtils.writeStringToFile(new File(baseDir+"/"+bundle.name+".css"), style.toString())
+      val scriptName = md5(js).toString()
+      val scriptFile = new File(baseDir+"/"+bundle.name+".js")
+      FileUtils.writeStringToFile(scriptFile, js)
+      compress(new File(scriptFile.getAbsolutePath()+".gz"),js,optimize)
 
-      val html = module.master(bundle,scriptName,styleName)
-      FileUtils.writeStringToFile(new File(getProject().getBuildDir()+"/modules/"+bundle.name+".html"),html)
+      val styleName = md5(css).toString()
+      val styleFile = new File(baseDir+"/"+bundle.name+".css")
+      FileUtils.writeStringToFile(styleFile, css)
+      compress(new File(styleFile.getAbsolutePath()+".gz"),css,optimize)
+
+      val html = formatHtml(module.master(bundle,scriptName,styleName),optimize)
+      val htmlFile = new File(getProject().getBuildDir()+"/modules/"+bundle.name+".html")
+      FileUtils.writeStringToFile(htmlFile,html)
+      compress(new File(htmlFile.getAbsolutePath()+".gz"),html,optimize)
     }
   }
 }
@@ -317,17 +338,29 @@ class Assets extends org.gradle.api.Plugin[Project] {
     })
 
     task.getInputs().file(sourcePath(bundle.source+"/modules/"+bundle.name+".coffee"))
-    task.getOutputs().file(targetPath(project,"assets/"+bundle.name+".js"))
-    task.getOutputs().file(targetPath(project,"assets/"+bundle.name+".css"))
-    task.getOutputs().file(targetPath(project,"modules/"+bundle.name+".html"))
+
+    val script = targetPath(project,"assets/"+bundle.name+".js")
+    task.getOutputs().file(script)
+    task.getOutputs().file(script+".gz")
+
+    val style = targetPath(project,"assets/"+bundle.name+".css")
+    task.getOutputs().file(style)
+    task.getOutputs().file(style+".gz")
+
+    val html = targetPath(project,"modules/"+bundle.name+".html")
+    task.getOutputs().file(html)
+    task.getOutputs().file(html+".gz")
 
     task
   }
 
   def buildFileTask(project:Project,`type`:Class[_],source:String,target:String) = {
     val task = project.task(Map("type"->`type`),targetPath(project,target))
-    task.getInputs().file(new File(source).getCanonicalPath())
-    task.getOutputs().file(targetPath(project,target))
+    val input = new File(source).getCanonicalPath()
+    val output = targetPath(project,target)
+    task.getInputs().file(input)
+    task.getOutputs().file(output)
+    task.getOutputs().file(output+".gz")
     task
   }
 
