@@ -224,8 +224,11 @@ object Assets {
 
 class Assets extends org.gradle.api.Plugin[Project] {
   import Assets._
+  val start = System.currentTimeMillis()
+  def seconds() = {(System.currentTimeMillis()-start)*0.001}
 
   def apply(project:Project) {
+    println("start: "+seconds())
     project.getExtensions().create("assets",classOf[Extension])
 
     val factory = new HashMap[String,Bundle]()
@@ -234,6 +237,7 @@ class Assets extends org.gradle.api.Plugin[Project] {
     val main = project.task(Map("type"->classOf[AssetsTask]),"assets")
 
     def parse(source:String,root:Boolean) {
+      println("parse: "+source+" => "+seconds())
       val config = new ConfigSlurper().parse(FileUtils.readFileToString(new File(source+"/assets.gradle")))
 
       config.getProperty("imports") match {
@@ -252,8 +256,11 @@ class Assets extends org.gradle.api.Plugin[Project] {
           for((k,v) <- modules) {
             val bundle = new Bundle(factory,k,source,v.asInstanceOf[java.util.Map[String,Object]]) {
               override def initialize() {
+                println("images: "+seconds())
                 buildImageTasks(project,images)
+                println("scripts: "+seconds())
                 buildScriptTasks(project,scripts)
+                println("styles: "+seconds())
                 buildStyleTasks(project,styles)
               }
             }
@@ -271,9 +278,13 @@ class Assets extends org.gradle.api.Plugin[Project] {
             if(root || imports.contains(k)) {
               val bundle = new Bundle(factory,k,source,v.asInstanceOf[java.util.Map[String,Object]]) {
                 override def initialize() {
+                  println("images: "+seconds())
                   buildImageTasks(project,images)
+                  println("scripts: "+seconds())
                   buildScriptTasks(project,scripts)
+                  println("styles: "+seconds())
                   buildStyleTasks(project,styles)
+                  println("module: "+seconds())
                   buildModuleTask(project,this)
 
                   main.dependsOn(name)
@@ -289,7 +300,9 @@ class Assets extends org.gradle.api.Plugin[Project] {
     }
 
     parse(".",true)
+    println("initialize: "+seconds())
     bundles.foreach(i => i.initialize())
+    println("finish: "+seconds())
   }
 
   def buildImageTasks(project:Project,images:List[(String,String)]) = {

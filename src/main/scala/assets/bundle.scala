@@ -60,6 +60,16 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
       case list:List[String] => list.map(i => (source+"/"+i,this.name+"/"+i)):List[(String,String)]
     }
 
+  def listFiles(list:List[File],file:File) {
+    for(i <- file.listFiles()) {
+      if(i.isFile()) {
+        list.add(i)
+      } else {
+        listFiles(list,i)
+      }
+    }
+  }
+
   lazy val images = {
     val list = new LinkedList[(String,String)]()
 
@@ -86,11 +96,13 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
                     list.add((file.getCanonicalPath(),target+"/"+relative))
                   } else if(file.isDirectory()) {
                     val path = file.getCanonicalPath()
+                    val files = new LinkedList[File]()
+                    listFiles(files,file.getCanonicalFile())
 
-                    for(r <- matcher.getResources("file:"+file.getCanonicalPath()+"/**/*.*")) {
-                      val relative = r.getFile().getCanonicalPath().substring(path.length())
-                      list.add((r.getFile().getCanonicalPath(),target+"/"+relative))
-                    }
+                    /*for(r <- files) {
+                      val relative = r.getCanonicalPath().substring(path.length())
+                      list.add((r.getCanonicalPath(),target+"/"+relative))
+                    }*/
                   } else {
                     throw new FileNotFoundException(file.getPath())
                   }
