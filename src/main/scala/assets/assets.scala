@@ -86,7 +86,7 @@ object Assets {
 
   def formatHtml(html:String,optimize:Boolean) = {
     if(false) {
-      val writer = new java.io.StringWriter()
+      /*val writer = new java.io.StringWriter()
       val filter = new org.cyberneko.html.filters.Writer(writer,"UTF-8")
       val purifier = new org.cyberneko.html.filters.Purifier()
       val filters = Array(purifier,filter)
@@ -94,7 +94,8 @@ object Assets {
       parser.setProperty("http://cyberneko.org/html/properties/filters",filters);
       val input = new XMLInputSource(null,null,null,new java.io.StringReader(html),null)
       parser.parse(input)
-      writer.toString()
+      writer.toString()*/
+      html
     } else {
       html
     }

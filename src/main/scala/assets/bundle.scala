@@ -11,10 +11,10 @@ import org.apache.commons.codec.digest.DigestUtils
 
 import org.mozilla.javascript._
 
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+// import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 
 object Bundle {
-  val matcher = new PathMatchingResourcePatternResolver()
+  // val matcher = new PathMatchingResourcePatternResolver()
 }
 
 abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val source:String, val assets:Map[String,Object]) {
@@ -99,10 +99,10 @@ abstract class Bundle(val factory:HashMap[String,Bundle],val name:String, val so
                     val files = new LinkedList[File]()
                     listFiles(files,file.getCanonicalFile())
 
-                    /*for(r <- files) {
+                    for(r <- files) {
                       val relative = r.getCanonicalPath().substring(path.length())
                       list.add((r.getCanonicalPath(),target+"/"+relative))
-                    }*/
+                    }
                   } else {
                     throw new FileNotFoundException(file.getPath())
                   }
