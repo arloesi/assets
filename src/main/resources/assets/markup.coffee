@@ -282,12 +282,14 @@ this.__renderModule = (name,js,css,templates) ->
   module = this
 
   markup.render ->
+    doctype 5
+
     html ->
       head ->
         runtime()
 
         link type:"text/css",rel:"stylesheet",href:"/assets/#{name}.css?version=#{css}"
-        script type:"tet/javascript",src:"/assets/#{name}.js?version=#{js}"
+        script type:"text/javascript",src:"/assets/#{name}.js?version=#{js}"
 
         module.master.head()
 
