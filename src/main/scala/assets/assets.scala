@@ -23,12 +23,22 @@ import com.google.javascript.jscomp._
 object Assets {
   import Compiler._
 
+  val start = System.currentTimeMillis()
+  def seconds() = {(System.currentTimeMillis()-start)*0.001}
+
+  println("init: "+seconds())
+
   final val TEMP = "assets-temp/"
 
+  println("context: "+seconds())
   val context = new Context()
+  println("coffee: "+seconds())
   val coffee = new Coffee(context)
+  println("less: "+seconds())
   val less = new Less()
+  println("markup: "+seconds())
   val markup = new Markup(context,coffee)
+  println("starting: "+seconds())
 
   def md5(source:String) = {
       val md = MessageDigest.getInstance("MD5");
@@ -225,8 +235,6 @@ object Assets {
 
 class Assets extends org.gradle.api.Plugin[Project] {
   import Assets._
-  val start = System.currentTimeMillis()
-  def seconds() = {(System.currentTimeMillis()-start)*0.001}
 
   def apply(project:Project) {
     println("start: "+seconds())

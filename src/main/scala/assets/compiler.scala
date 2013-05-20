@@ -11,7 +11,8 @@ object Compiler {
   import Context._
 
   class Coffee(module:Context) {
-    module.evaluateFile("assets/coffee.js")
+    // module.evaluateFile("assets/coffee.js")
+    withContext(ctx => new assets.Coffee().exec(ctx,module.scope))
 
     def compile(name:String, source:String):String = {
       val coffee = module.get("CoffeeScript")
@@ -53,7 +54,8 @@ object Compiler {
       }
     }
 
-    context.evaluateString(coffee.compile("markup",IOUtils.toString(getClass().getClassLoader().getResourceAsStream("assets/markup.coffee"))))
+    // context.evaluateString(coffee.compile("markup",IOUtils.toString(getClass().getClassLoader().getResourceAsStream("assets/markup.coffee"))))
+    withContext(ctx => new assets.Markup().exec(ctx,context.scope))
     val unwrap:Function = context.get("__unwrapModule")
     val render:Function = context.get("__renderModule")
 

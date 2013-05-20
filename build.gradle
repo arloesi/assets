@@ -77,3 +77,32 @@ uploadArchives {
 task projects(dependsOn:["cleanEclipse","eclipseProject","eclipseClasspath"]) << {
 }
 
+ext.compile = { source, target, command, arguments,depends ->
+  return task(target,type:Exec,dependsOn:depends) {
+    inputs.file file("$projectDir/$source")
+    outputs.dir file("$projectDir/build/$target")
+
+    environment << System.getenv()
+    commandLine command
+    args arguments
+
+    standardOutput = new ByteArrayOutputStream()
+
+    doFirst {
+      def file = new File("$projectDir/build/$target").getParentFile()
+      file.mkdirs()
+    }
+
+    doLast {
+      println standardOutput.toString()
+    }
+  }
+}
+
+compile("src/main/resources/assets/markup.coffee","markup.js","coffee",["-o","$projectDir/build","-c","$projectDir/src/main/resources/assets/markup.coffee"],[])
+compile("build/markup.js","classes/main/assets/Markup.class","jsc",["-d","$projectDir/build/classes/main","-package","assets","-o","Markup","-opt","9","$projectDir/build/markup.js"],["markup.js"])
+compile("src/main/resources/assets/coffee.js","classes/main/assets/Coffee.class","jsc",["-d","$projectDir/build/classes/main","-package","assets","-o","Coffee","-opt","9","$projectDir/src/main/resources/assets/coffee.js"],[])
+
+tasks["compileJava"].dependsOn(["classes/main/assets/Coffee.class","classes/main/assets/Markup.class"])
+
+
