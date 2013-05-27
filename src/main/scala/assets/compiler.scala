@@ -68,9 +68,10 @@ object Compiler {
       for(i <- bundle.modules) {
         val file = new File(i).getCanonicalFile()
         context.evaluateString(coffee.compile(file.getPath(),FileUtils.readFileToString(file)))
-        module = context.get("module")
+        val mod = context.scope.get("module",context.scope)
 
-        if(module != null) {
+        if(mod.isInstanceOf[Scriptable]) {
+          module = mod.asInstanceOf[Scriptable]
           val unwrapped = withContext(ctx => unwrap.call(ctx,context.scope,module,Array(module)).asInstanceOf[Scriptable])
 
           result.inlines.addAll(Context.toType(unwrapped.get("inline",unwrapped),classOf[List[String]]))
