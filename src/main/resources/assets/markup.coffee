@@ -236,6 +236,11 @@ markup.ie = (condition, contents) ->
   text "<![endif]-->"
   text '\n' if data.format
 
+markup.bind = (binding,inner) ->
+  comment "ko #{binding}"
+  inner()
+  comment "/ko"
+
 tag_impl = (i) ->
   (a...) -> tag i, a...
 
